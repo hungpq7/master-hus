@@ -110,19 +110,20 @@ for u, v in G.edges():
     x0, y0 = pos[u]; x1, y1 = pos[v]
     edge_x += [x0, x1, None]
     edge_y += [y0, y1, None]
-edge_trace = go.Scatter(x=edge_x, y=edge_y, mode='lines', line=dict(width=1))
+edge_trace = go.Scatter(
+    x=edge_x, y=edge_y, mode='lines', line=dict(width=1), hoverinfo='none')
 
 node_x = [pos[i][0] for i in G.nodes()]
 node_y = [pos[i][1] for i in G.nodes()]
-colors = steps[step_idx]
-palette = ['red','green','blue','orange','purple','yellow','pink','brown','cyan','gray']
 node_trace = go.Scatter(
-    x=node_x, y=node_y, mode='markers+text', text=list(map(str,G.nodes())), textposition='top center',
-    marker=dict(size=20, color=[palette[c] if 0 <= c < len(palette) else 'gray' for c in colors]))
+    x=node_x, y=node_y, mode='markers+text', text=list(map(str,G.nodes())), textposition='top center', hoverinfo='none',
+    marker=dict(size=20, color='grey'))
 
 fig = go.Figure(data=[edge_trace, node_trace])
-fig.update_layout(xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                  yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                  margin=dict(b=0,l=0,r=0,t=0))
+fig.update_layout(
+    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+    margin=dict(b=0,l=0,r=0,t=0)
+)
 
 st.plotly_chart(fig, use_container_width=True)
