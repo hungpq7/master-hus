@@ -86,25 +86,26 @@ else:
         G.add_edge(u, v)
     G.add_nodes_from(nodes)
 
+# Color count for exact algorithms
 if alg in ["Brute Force", "Backtracking"]:
     k = st.sidebar.number_input("Colors", min_value=1, max_value=10, value=3)
 
-# Run all button
-graph_trace = None
-if st.button("Run All"):
-    start = time.time()
-    if alg == "Brute Force":
-        steps = list(bruteforce_steps(G, k))
-    elif alg == "Backtracking":
-        steps = list(backtracking_steps(G, k))
-    elif alg == "Greedy":
-        steps = list(greedy_steps(G))
-    else:
-        steps = list(welsh_powell_steps(G))
-    total_time = time.time() - start
-    st.write(f"Total time: {total_time:.4f} seconds")
-    final_colors = steps[-1] if steps else []
-    # Prepare Plotly graph
+# Generate steps (un-timed)
+if alg == "Brute Force":
+    steps = list(bruteforce_steps(G, k))
+elif alg == "Backtracking":
+    steps = list(backtracking_steps(G, k))
+elif alg == "Greedy":
+    steps = list(greedy_steps(G))
+else:
+    steps = list(welsh_powell_steps(G))
+
+# Step slider
+step_idx = st.slider("Step", 1, len(steps), 1) - 1
+st.markdown(f"**Step {step_idx+1}/{len(steps)}**")
+
+# Display graph for selected step
+def draw_graph(colors):
     pos = nx.spring_layout(G, seed=42)
     edge_x, edge_y = [], []
     for u, v in G.edges():
@@ -124,3 +125,20 @@ if st.button("Run All"):
         margin=dict(b=0,l=0,r=0,t=0)
     )
     st.plotly_chart(fig, use_container_width=True)
+
+# Draw current step
+draw_graph(steps[step_idx])
+
+# Run all button (timed)
+if st.button("Run All"):
+    start = time.time()
+    if alg == "Brute Force":
+        _ = list(bruteforce_steps(G, k))
+    elif alg == "Backtracking":
+        _ = list(backtracking_steps(G, k))
+    elif alg == "Greedy":
+        _ = list(greedy_steps(G))
+    else:
+        _ = list(welsh_powell_steps(G))
+    total_time = time.time() - start
+    st.write(f"Total time: {total_time:.4f} seconds")
