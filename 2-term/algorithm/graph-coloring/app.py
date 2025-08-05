@@ -27,7 +27,6 @@ def bruteforce_steps(graph, k):
         yield colors.copy()
     yield colors.copy()
 
-
 def backtracking_steps(graph, k):
     n = graph.number_of_nodes()
     colors = [-1] * n
@@ -45,7 +44,6 @@ def backtracking_steps(graph, k):
             v -= 1
         yield colors.copy()
 
-
 def greedy_steps(graph):
     n = graph.number_of_nodes()
     colors = [-1] * n
@@ -56,7 +54,6 @@ def greedy_steps(graph):
             c += 1
         colors[v] = c
         yield colors.copy()
-
 
 def welsh_powell_steps(graph):
     order = sorted(graph.nodes(), key=lambda v: graph.degree(v), reverse=True)
@@ -90,7 +87,7 @@ else:
 if alg in ["Brute Force", "Backtracking"]:
     k = st.sidebar.number_input("Colors", min_value=1, max_value=10, value=3)
 
-# Generate steps (un-timed)
+# Generate steps
 if alg == "Brute Force":
     steps = list(bruteforce_steps(G, k))
 elif alg == "Backtracking":
@@ -100,11 +97,28 @@ elif alg == "Greedy":
 else:
     steps = list(welsh_powell_steps(G))
 
-# Step slider
-step_idx = st.slider("Step", 1, len(steps), 1) - 1
-st.markdown(f"**Step {step_idx+1}/{len(steps)}**")
+# Run All button and elapsed time
+run_col, time_col = st.columns([1,1])
+elapsed = None
+if run_col.button("Run All"):
+    start = time.time()
+    if alg == "Brute Force":
+        _ = list(bruteforce_steps(G, k))
+    elif alg == "Backtracking":
+        _ = list(backtracking_steps(G, k))
+    elif alg == "Greedy":
+        _ = list(greedy_steps(G))
+    else:
+        _ = list(welsh_powell_steps(G))
+    elapsed = time.time() - start
+    time_col.write(f"Elapsed: {elapsed:.4f}s")
 
-# Display graph for selected step
+# Step slider and label on same line
+slider_col, label_col = st.columns([3,1])
+step_idx = slider_col.slider("Step", 1, len(steps), 1) - 1
+label_col.markdown(f"**{step_idx+1}/{len(steps)}**")
+
+# Draw graph for current step
 def draw_graph(colors):
     pos = nx.spring_layout(G, seed=42)
     edge_x, edge_y = [], []
@@ -126,19 +140,5 @@ def draw_graph(colors):
     )
     st.plotly_chart(fig, use_container_width=True)
 
-# Draw current step
+# Render
 draw_graph(steps[step_idx])
-
-# Run all button (timed)
-if st.button("Run All"):
-    start = time.time()
-    if alg == "Brute Force":
-        _ = list(bruteforce_steps(G, k))
-    elif alg == "Backtracking":
-        _ = list(backtracking_steps(G, k))
-    elif alg == "Greedy":
-        _ = list(greedy_steps(G))
-    else:
-        _ = list(welsh_powell_steps(G))
-    total_time = time.time() - start
-    st.write(f"Total time: {total_time:.4f} seconds")
