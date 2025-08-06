@@ -1,6 +1,6 @@
 import streamlit as st
 import networkx as nx
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 import time
 
 # Step generators
@@ -27,6 +27,7 @@ def bruteforce_steps(graph, k):
         yield colors.copy()
     yield colors.copy()
 
+
 def backtracking_steps(graph, k):
     n = graph.number_of_nodes()
     colors = [-1] * n
@@ -44,6 +45,7 @@ def backtracking_steps(graph, k):
             v -= 1
         yield colors.copy()
 
+
 def greedy_steps(graph):
     n = graph.number_of_nodes()
     colors = [-1] * n
@@ -54,6 +56,7 @@ def greedy_steps(graph):
             c += 1
         colors[v] = c
         yield colors.copy()
+
 
 def welsh_powell_steps(graph):
     order = sorted(graph.nodes(), key=lambda v: graph.degree(v), reverse=True)
@@ -118,27 +121,20 @@ slider_col, label_col = st.columns([3,1])
 step_idx = slider_col.slider("Step", 1, len(steps), 1) - 1
 label_col.markdown(f"**{step_idx+1}/{len(steps)}**")
 
-# Draw graph for current step
+# Draw graph for current step using matplotlib
+
 def draw_graph(colors):
     pos = nx.spring_layout(G, seed=42)
-    edge_x, edge_y = [], []
-    for u, v in G.edges():
-        x0, y0 = pos[u]; x1, y1 = pos[v]
-        edge_x += [x0, x1, None]
-        edge_y += [y0, y1, None]
-    edge_trace = go.Scatter(x=edge_x, y=edge_y, mode='lines', line=dict(width=1), hoverinfo='none')
-    node_x = [pos[i][0] for i in G.nodes()]
-    node_y = [pos[i][1] for i in G.nodes()]
-    node_trace = go.Scatter(
-        x=node_x, y=node_y, mode='markers+text', text=[str(i) for i in G.nodes()], textposition='top center', hoverinfo='none',
-        marker=dict(size=20, color='grey'))
-    fig = go.Figure(data=[edge_trace, node_trace])
-    fig.update_layout(
-        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        margin=dict(b=0,l=0,r=0,t=0)
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    fig, ax = plt.subplots(figsize=(6,6), dpi=200)
+    # Draw edges
+    nx.draw_networkx_edges(G, pos, ax=ax, width=1)
+    # Draw nodes
+    nx.draw_networkx_nodes(G, pos, ax=ax, node_size=300, node_color='grey')
+    # Draw labels
+    nx.draw_networkx_labels(G, pos, ax=ax, font_size=10)
+    ax.set_axis_off()
+    st.pyplot(fig)
 
 # Render
+
 draw_graph(steps[step_idx])
