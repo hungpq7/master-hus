@@ -100,9 +100,9 @@ else:
     steps = list(welsh_powell_steps(G))
 
 # Run All button and elapsed time
-run_col, time_col = st.columns([1,1])
+graph_col, time_col = st.columns([1,1])
 elapsed = None
-if run_col.button("Run All"):
+if graph_col.button("Run All"):
     start = time.time()
     if alg == "Brute Force":
         _ = list(bruteforce_steps(G, k))
@@ -115,18 +115,22 @@ if run_col.button("Run All"):
     elapsed = time.time() - start
     time_col.write(f"Elapsed: {elapsed:.4f}s")
 
-# Step slider and label
-slider_col, label_col = st.columns([3,1])
-step_idx = slider_col.slider("Step", 1, len(steps), 1) - 1
-label_col.markdown(f"**{step_idx+1}/{len(steps)}**")
+# Step slider only
+step_idx = st.slider("Step", min_value=1, max_value=len(steps), value=1) - 1
 
-# Draw graph using Graphviz
-
+# Draw graph using Graphviz with enhanced styling
 def draw_graph(colors):
     dot = "graph G {\n"
-    dot += "  node [style=filled, fillcolor=grey];\n"
+    # Graph attributes
+    dot += "  graph [splines=true, overlap=false, sep=0.5, ranksep=0.5, layout=neato];\n"
+    # Node style
+    dot += "  node [shape=circle, style=filled, fillcolor=\"#CCCCCC\", color=\"#333333\", fontcolor=\"#000000\", fontsize=12];\n"
+    # Edge style
+    dot += "  edge [color=\"#444444\", penwidth=1.5];\n"
+    # Nodes
     for i in G.nodes():
         dot += f"  {i};\n"
+    # Edges
     for u, v in G.edges():
         dot += f"  {u} -- {v};\n"
     dot += "}"
