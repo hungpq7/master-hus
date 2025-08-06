@@ -1,6 +1,5 @@
 import streamlit as st
 import networkx as nx
-import matplotlib.pyplot as plt
 import time
 
 # Step generators
@@ -116,24 +115,22 @@ if run_col.button("Run All"):
     elapsed = time.time() - start
     time_col.write(f"Elapsed: {elapsed:.4f}s")
 
-# Step slider and label on same line
+# Step slider and label
 slider_col, label_col = st.columns([3,1])
 step_idx = slider_col.slider("Step", 1, len(steps), 1) - 1
+label_col.markdown(f"**{step_idx+1}/{len(steps)}**")
 
-# Draw graph for current step using matplotlib
+# Draw graph using Graphviz
 
 def draw_graph(colors):
-    pos = nx.spring_layout(G, seed=42)
-    fig, ax = plt.subplots(figsize=(4,4), dpi=500)
-    # Draw edges
-    nx.draw_networkx_edges(G, pos, ax=ax, width=1)
-    # Draw nodes
-    nx.draw_networkx_nodes(G, pos, ax=ax, node_size=300, node_color='grey')
-    # Draw labels
-    nx.draw_networkx_labels(G, pos, ax=ax, font_size=10)
-    ax.set_axis_off()
-    st.pyplot(fig, use_container_width=False)
+    dot = "graph G {\n"
+    dot += "  node [style=filled, fillcolor=grey];\n"
+    for i in G.nodes():
+        dot += f"  {i};\n"
+    for u, v in G.edges():
+        dot += f"  {u} -- {v};\n"
+    dot += "}"
+    st.graphviz_chart(dot)
 
 # Render
-
 draw_graph(steps[step_idx])
