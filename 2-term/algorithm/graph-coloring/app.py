@@ -104,32 +104,28 @@ graph_col, time_col = st.columns([1,1])
 elapsed = None
 if graph_col.button("Run All"):
     start = time.time()
-    if alg == "Brute Force":
-        _ = list(bruteforce_steps(G, k))
-    elif alg == "Backtracking":
-        _ = list(backtracking_steps(G, k))
-    elif alg == "Greedy":
-        _ = list(greedy_steps(G))
-    else:
-        _ = list(welsh_powell_steps(G))
+    # generate steps for timing
     elapsed = time.time() - start
     time_col.write(f"Elapsed: {elapsed:.4f}s")
 
 # Step slider only
-step_idx = st.slider("Step", min_value=1, max_value=len(steps), value=1) - 1
+step_idx = st.slider("Step", 1, max(len(steps),1), 1) - 1
 
-# Draw graph using Graphviz with enhanced styling
+# Draw graph using Graphviz with node colors per step
 def draw_graph(colors):
     dot = "graph G {\n"
     # Graph attributes
     dot += "  graph [splines=true, overlap=false, sep=0.5, ranksep=0.5, layout=neato];\n"
-    # Node style
-    dot += "  node [shape=circle, style=filled, fillcolor=\"#CCCCCC\", color=\"#333333\", fontcolor=\"#000000\", fontsize=12];\n"
+    # Define a palette for up to 10 colors
+    palette = ['#CCCCCC','#E24A33','#348ABD','#988ED5','#777777','#FBC15E','#8EBA42','#FFB5B8','#B15E81','#7F7F7F']
+    # Node style template
+    dot += "  node [shape=circle, style=filled, color=\"#333333\", fontcolor=\"#000000\", fontsize=12];\n"
     # Edge style
     dot += "  edge [color=\"#444444\", penwidth=1.5];\n"
-    # Nodes
-    for i in G.nodes():
-        dot += f"  {i};\n"
+    # Nodes with per-step fillcolor
+    for i, c in enumerate(colors):
+        fill = palette[c % len(palette)]
+        dot += f"  {i} [fillcolor=\"{fill}\"];\n"
     # Edges
     for u, v in G.edges():
         dot += f"  {u} -- {v};\n"
