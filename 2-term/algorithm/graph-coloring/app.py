@@ -124,7 +124,7 @@ step_idx = slider_col.slider("Step", 1, len(steps), 1) - 1
 
 def draw_graph(colors):
     pos = nx.spring_layout(G, seed=42)
-    fig, ax = plt.subplots(figsize=(2,2), dpi=500)
+    fig, ax = plt.subplots(figsize=(4,4), dpi=500)
     # Draw edges
     nx.draw_networkx_edges(G, pos, ax=ax, width=1)
     # Draw nodes
@@ -132,7 +132,7 @@ def draw_graph(colors):
     # Draw labels
     nx.draw_networkx_labels(G, pos, ax=ax, font_size=10)
     ax.set_axis_off()
-    st.pyplot(fig, format='png')
+    st.pyplot(fig, use_container_width=False)
 
 # Render
 
