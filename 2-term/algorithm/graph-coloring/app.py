@@ -119,7 +119,6 @@ if run_col.button("Run All"):
 # Step slider and label on same line
 slider_col, label_col = st.columns([3,1])
 step_idx = slider_col.slider("Step", 1, len(steps), 1) - 1
-label_col.markdown(f"**{step_idx+1}/{len(steps)}**")
 
 # Draw graph for current step using matplotlib
 
@@ -133,7 +132,7 @@ def draw_graph(colors):
     # Draw labels
     nx.draw_networkx_labels(G, pos, ax=ax, font_size=10)
     ax.set_axis_off()
-    st.pyplot(fig)
+    st.pyplot(fig, format='svg')
 
 # Render
 
