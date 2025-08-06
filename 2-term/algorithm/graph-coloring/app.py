@@ -125,7 +125,7 @@ label_col.markdown(f"**{step_idx+1}/{len(steps)}**")
 
 def draw_graph(colors):
     pos = nx.spring_layout(G, seed=42)
-    fig, ax = plt.subplots(figsize=(6,6), dpi=200)
+    fig, ax = plt.subplots(figsize=(4,4), dpi=300)
     # Draw edges
     nx.draw_networkx_edges(G, pos, ax=ax, width=1)
     # Draw nodes
