@@ -70,20 +70,15 @@ def welsh_powell_steps(graph):
 
 
 def dsatur_steps(graph):
-    # DSATUR: choose next vertex by saturation degree, tie-break on degree
     n = graph.number_of_nodes()
     colors = [-1] * n
     degrees = dict(graph.degree())
     uncolored = set(graph.nodes())
     while uncolored:
-        # saturation degree: number of distinct neighbor colors
         sat_degrees = {v: len({colors[u] for u in graph.neighbors(v) if colors[u] != -1}) for v in uncolored}
         max_sat = max(sat_degrees.values())
-        # candidates with maximum saturation
         candidates = [v for v, sat in sat_degrees.items() if sat == max_sat]
-        # tie-break by degree
         v = max(candidates, key=lambda x: degrees[x])
-        # assign smallest available color
         used = {colors[u] for u in graph.neighbors(v) if colors[u] != -1}
         c = 0
         while c in used:
@@ -114,49 +109,58 @@ if alg in ["Brute Force", "Backtracking"]:
     k = st.sidebar.number_input("Colors", min_value=1, max_value=10, value=3)
 
 # Generate steps
-if alg == "Brute Force":
-    steps = list(bruteforce_steps(G, k))
-elif alg == "Backtracking":
-    steps = list(backtracking_steps(G, k))
-elif alg == "Greedy":
-    steps = list(greedy_steps(G))
-elif alg == "Welsh-Powell":
-    steps = list(welsh_powell_steps(G))
-elif alg == "DSATUR":
-    steps = list(dsatur_steps(G))
+def get_steps():
+    if alg == "Brute Force":
+        return list(bruteforce_steps(G, k))
+    if alg == "Backtracking":
+        return list(backtracking_steps(G, k))
+    if alg == "Greedy":
+        return list(greedy_steps(G))
+    if alg == "Welsh-Powell":
+        return list(welsh_powell_steps(G))
+    if alg == "DSATUR":
+        return list(dsatur_steps(G))
+
+steps = get_steps()
+max_steps = len(steps)
+
+# Initialize session state for step index
+if 'step_idx' not in st.session_state:
+    st.session_state.step_idx = 0
 
 # Run All button and elapsed time
 graph_col, time_col = st.columns([1,1])
 elapsed = None
 if graph_col.button("Run All"):
     start = time.time()
-    # generate steps for timing
+    _ = get_steps()
     elapsed = time.time() - start
     time_col.write(f"Elapsed: {elapsed:.4f}s")
 
-# Step slider only
-step_idx = st.slider("Step", 1, max(len(steps),1), 1) - 1
+# Navigation controls
+nav_col1, nav_col2, nav_col3 = st.columns([1,2,1])
+if nav_col1.button("Previous"):
+    st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
+
+step_info = nav_col2.text_input("Step", f"{st.session_state.step_idx+1}/{max_steps}", disabled=True)
+
+if nav_col3.button("Next"):
+    st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps-1)
 
 # Draw graph using Graphviz with node colors per step
 def draw_graph(colors):
     dot = "graph G {\n"
-    # Graph attributes
     dot += "  graph [splines=true, overlap=false, sep=0.5, ranksep=0.5, layout=neato];\n"
-    # Define a palette for up to 10 colors
     palette = ['#CCCCCC','#E24A33','#348ABD','#988ED5','#777777','#FBC15E','#8EBA42','#FFB5B8','#B15E81','#7F7F7F']
-    # Node style template
     dot += "  node [shape=circle, style=filled, color=\"#333333\", fontcolor=\"#000000\", fontsize=12];\n"
-    # Edge style
     dot += "  edge [color=\"#444444\", penwidth=1.5];\n"
-    # Nodes with per-step fillcolor
     for i, c in enumerate(colors):
         fill = palette[c % len(palette)]
         dot += f"  {i} [fillcolor=\"{fill}\"];\n"
-    # Edges
     for u, v in G.edges():
         dot += f"  {u} -- {v};\n"
     dot += "}"
     st.graphviz_chart(dot)
 
-# Render
-draw_graph(steps[step_idx])
+# Render current step
+draw_graph(steps[st.session_state.step_idx])
