@@ -6,7 +6,7 @@ import time
 # Step generators
 def bruteforce_steps(graph, k):
     n = graph.number_of_nodes()
-    colors = [0] * n
+    colors = [1] * n  # start all at first color 1 (no unassigned state)
 
     def is_valid():
         for u, v in graph.edges():
@@ -21,9 +21,9 @@ def bruteforce_steps(graph, k):
         i = 0
         while i < n:
             colors[i] += 1
-            if colors[i] < k:
+            if colors[i] <= k:
                 break
-            colors[i] = 0
+            colors[i] = 1
             i += 1
 
         if i == n:
@@ -36,27 +36,28 @@ def bruteforce_steps(graph, k):
 
 def backtracking_steps(graph, k):
     n = graph.number_of_nodes()
-    colors = [-1] * n
+    colors = [0] * n  # 0 represents unassigned
     v = 0
 
     while 0 <= v < n:
         colors[v] += 1
+        # skip to next valid color
         while (
-            colors[v] < k
+            colors[v] <= k
             and any(
                 colors[v] == colors[u]
                 for u in graph.neighbors(v)
-                if colors[u] != -1
+                if colors[u] != 0
             )
         ):
             colors[v] += 1
 
-        if colors[v] < k:
+        if colors[v] <= k:
             v += 1
             if v < n:
-                colors[v] = -1
+                colors[v] = 0
         else:
-            colors[v] = -1
+            colors[v] = 0
             v -= 1
 
         yield colors.copy()
@@ -64,11 +65,11 @@ def backtracking_steps(graph, k):
 
 def greedy_steps(graph):
     n = graph.number_of_nodes()
-    colors = [-1] * n
+    colors = [0] * n
 
     for v in graph.nodes():
-        used = {colors[u] for u in graph.neighbors(v) if colors[u] != -1}
-        c = 0
+        used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
+        c = 1
         while c in used:
             c += 1
         colors[v] = c
@@ -79,11 +80,11 @@ def welsh_powell_steps(graph):
     order = sorted(
         graph.nodes(), key=lambda v: graph.degree(v), reverse=True
     )
-    colors = [-1] * graph.number_of_nodes()
+    colors = [0] * graph.number_of_nodes()
 
     for v in order:
-        used = {colors[u] for u in graph.neighbors(v) if colors[u] != -1}
-        c = 0
+        used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
+        c = 1
         while c in used:
             c += 1
         colors[v] = c
@@ -92,7 +93,7 @@ def welsh_powell_steps(graph):
 
 def dsatur_steps(graph):
     n = graph.number_of_nodes()
-    colors = [-1] * n
+    colors = [0] * n
     degrees = dict(graph.degree())
     uncolored = set(graph.nodes())
 
@@ -100,15 +101,15 @@ def dsatur_steps(graph):
         sat_degrees = {
             v: len({colors[u]
                      for u in graph.neighbors(v)
-                     if colors[u] != -1})
+                     if colors[u] != 0})
             for v in uncolored
         }
         max_sat = max(sat_degrees.values())
         candidates = [v for v, sat in sat_degrees.items() if sat == max_sat]
         v = max(candidates, key=lambda x: degrees[x])
 
-        used = {colors[u] for u in graph.neighbors(v) if colors[u] != -1}
-        c = 0
+        used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
+        c = 1
         while c in used:
             c += 1
 
@@ -189,8 +190,16 @@ def draw_graph(colors):
            "  graph [splines=true, overlap=false, sep=0.5, "
            "ranksep=0.5, layout=neato];\n")
     palette = [
-        "#CCCCCC", "#E24A33", "#348ABD", "#988ED5", "#777777",
-        "#FBC15E", "#8EBA42", "#FFB5B8", "#B15E81", "#7F7F7F",
+        "#FFFFFF",  # 0 = white/unassigned
+        "#E24A33",  # 1
+        "#348ABD",  # 2
+        "#988ED5",  # 3
+        "#777777",  # 4
+        "#FBC15E",  # 5
+        "#8EBA42",  # 6
+        "#FFB5B8",  # 7
+        "#B15E81",  # 8
+        "#7F7F7F",  # 9
     ]
     dot += (
         "  node [shape=circle, style=filled, color=\"#333333\", "
@@ -198,7 +207,7 @@ def draw_graph(colors):
     )
     dot += "  edge [color=\"#444444\", penwidth=1.5];\n"
     for i, c in enumerate(colors):
-        fill = palette[c % len(palette)]
+        fill = palette[c] if c < len(palette) else palette[0]
         dot += f"  {i} [fillcolor=\"{fill}\"];\n"
     for u, v in G.edges():
         dot += f"  {u} -- {v};\n"
@@ -232,27 +241,5 @@ with graph_col:
     draw_graph(steps[st.session_state.step_idx])
 
 # Explanation
-prev_desc = None
-if st.session_state.step_idx > 0:
-    prev_desc = steps[st.session_state.step_idx - 1]
 desc = steps[st.session_state.step_idx]
-next_desc = None
-if st.session_state.step_idx < max_steps - 1:
-    next_desc = steps[st.session_state.step_idx + 1]
-
-st.write("**Detailed explanation:**")
-if prev_desc is not None:
-    changes = [i for i, (p, c) in enumerate(zip(prev_desc, desc)) if p != c]
-    if changes:
-        for i in changes:
-            st.write(f"- Node {i}: changed from color {prev_desc[i]} to {desc[i]}")
-    else:
-        st.write("- No color changes from the previous step.")
-else:
-    st.write("- Initial coloring applied.")
-
-st.write(f"**Current step ({st.session_state.step_idx + 1}):** assignment {desc}")
-if next_desc is not None:
-    st.write(f"**Next step will evaluate:** assignment {next_desc}")
-else:
-    st.write("**This is the final valid coloring.**")
+st.write(f"Node color assignments (0 = unassigned): {desc}")
