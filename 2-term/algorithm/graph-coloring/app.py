@@ -146,11 +146,13 @@ elif graph_option == "Erdos-Renyi Random":
 elif graph_option == "Barabasi-Albert":
     n = st.sidebar.number_input(
         "Number of nodes", min_value=2, max_value=50, value=10,
-        key="ba_n", on_change=reset_step
+        key="ba_n",
+        # on_change=reset_step
     )
     m = st.sidebar.number_input(
         "Edges to attach (m)", min_value=1, max_value=n-1, value=2,
-        key="ba_m", on_change=reset_step
+        key="ba_m",
+        # on_change=reset_step
     )
     G = nx.barabasi_albert_graph(n, m)
 elif graph_option == "Watts-Strogatz":
