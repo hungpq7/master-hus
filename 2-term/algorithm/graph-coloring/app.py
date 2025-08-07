@@ -149,18 +149,17 @@ if "step_idx" not in st.session_state:
 
 col1, col2 = st.columns([1, 1])
 with col1:
-    if st.button("Previous"):
-        st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
-    if st.button("Next"):
-        st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
+    sub1, sub2, _ = st.columns([1,1,2])
+    with sub1:
+        if st.button("Previous"):
+            st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
+    with sub2:
+        if st.button("Next"):
+            st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
+    st.metric("Step", f"{st.session_state.step_idx + 1}/{max_steps}")
 with col2:
     if st.button("Run All", type='primary'):
         st.session_state.step_idx = max_steps - 1
-
-# Metrics
-st.metric("Step", f"{st.session_state.step_idx + 1}/{max_steps}")
-
-# Draw graph
 
 def draw_graph(colors):
     dot = (
