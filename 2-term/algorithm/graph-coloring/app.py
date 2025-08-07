@@ -185,8 +185,7 @@ if "elapsed" not in st.session_state:
 
 # Draw graph
 
-def draw_graph(colors):
-    # Increase node separation (nodesep, ranksep) and reduce node size via width
+def draw_graph(G, colors):
     dot = (
         "graph G {\n"
         "  graph [splines=true, overlap=false, sep=1.0, ranksep=1.0, nodesep=1.0, layout=neato];\n"
@@ -195,7 +194,6 @@ def draw_graph(colors):
         "#FFFFFF", "#E24A33", "#348ABD", "#988ED5", "#777777",
         "#FBC15E", "#8EBA42", "#FFB5B8", "#B15E81", "#7F7F7F",
     ]
-    # Set fixed node size with smaller width and height
     dot += (
         "  node [shape=circle, style=filled, color=\"#333333\", "
         "fontcolor=\"#000000\", fontsize=14, width=0.5, height=0.5];\n"
@@ -205,8 +203,7 @@ def draw_graph(colors):
     for idx, c in enumerate(colors):
         node_id = idx + 1
         fill = palette[c] if c < len(palette) else palette[0]
-        dot += (f"  {node_id} [label=\"{node_id}\", "
-                f"fillcolor=\"{fill}\"];\n")
+        dot += f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\"];\n"
 
     for u, v in G.edges():
         dot += f"  {u+1} -- {v+1};\n"
@@ -214,32 +211,91 @@ def draw_graph(colors):
     dot += "}"
     st.graphviz_chart(dot)
 
-# Controls
-def run_all():
-    start = time.time()
-    _ = get_steps()
-    st.session_state.elapsed = time.time() - start
+# Sidebar title and controls
+st.sidebar.title("GRAPH COLORING DEMO")
+# Algorithm selection
+algorithms = ["Brute Force", "Backtracking", "Greedy", "Welsh-Powell", "DSATUR"]
+st.sidebar.selectbox("Algorithm", algorithms, key="alg", on_change=lambda: st.session_state.update({"step_idx":0, "elapsed":0}))
 
-ctrl1, ctrl2 = st.columns([1, 1])
-with ctrl1:
-    if st.button("Previous", key="prev"):  # noqa: E731
+# Predefined graph demos
+demo = st.sidebar.selectbox(
+    "Demo Graph",
+    ["4-cycle", "Complete Graph", "Path Graph", "Star Graph", "Binary Tree", "Random Graph", "Custom"],
+    key="demo",
+    on_change=lambda: st.session_state.update({"step_idx":0, "elapsed":0})
+)
+
+# Parameters for demos
+if demo == "Complete Graph":
+    n = st.sidebar.number_input("Nodes (n)", min_value=2, max_value=20, value=5, key="param_n")
+    G = nx.complete_graph(n)
+elif demo == "Path Graph":
+    n = st.sidebar.number_input("Nodes (n)", min_value=2, max_value=20, value=5, key="param_n2")
+    G = nx.path_graph(n)
+elif demo == "Star Graph":
+    n = st.sidebar.number_input("Leaves (n)", min_value=1, max_value=20, value=4, key="param_n3")
+    G = nx.star_graph(n)
+elif demo == "Binary Tree":
+    h = st.sidebar.number_input("Height (h)", min_value=1, max_value=5, value=3, key="param_h")
+    G = nx.balanced_tree(r=2, h=h)
+elif demo == "Random Graph":
+    n = st.sidebar.number_input("Nodes (n)", min_value=2, max_value=20, value=10, key="param_n4")
+    p = st.sidebar.slider("Edge Prob (p)", min_value=0.0, max_value=1.0, value=0.3, step=0.05, key="param_p")
+    G = nx.erdos_renyi_graph(n, p)
+elif demo == "4-cycle":
+    G = nx.cycle_graph(4)
+else:
+    adj = st.sidebar.text_area("Edges (u v per line):", "1 2\n2 3\n3 4\n4 1", key="edges")
+    G = nx.Graph()
+    nodes = set()
+    for line in adj.splitlines():
+        u, v = map(int, line.split())
+        nodes.update([u-1, v-1])
+        G.add_edge(u-1, v-1)
+    G.add_nodes_from(nodes)
+
+# Color count for exact algorithms
+if st.session_state.alg in ["Brute Force", "Backtracking"]:
+    k = st.sidebar.number_input("Colors", min_value=1, max_value=10, value=3, key="k", on_change=lambda: st.session_state.update({"step_idx":0, "elapsed":0}))
+
+# Generate steps
+generators = {
+    "Brute Force": lambda: list(bruteforce_steps(G, k)),
+    "Backtracking": lambda: list(backtracking_steps(G, k)),
+    "Greedy": lambda: list(greedy_steps(G)),
+    "Welsh-Powell": lambda: list(welsh_powell_steps(G)),
+    "DSATUR": lambda: list(dsatur_steps(G)),
+}
+steps = generators[st.session_state.alg]()
+max_steps = len(steps)
+
+# Session state defaults
+st.session_state.setdefault("step_idx", 0)
+st.session_state.setdefault("elapsed", 0.0)
+
+# Controls
+col1, col2 = st.columns([2,1])
+with col1:
+    prev, next = st.columns([1,10])
+    if prev.button("Previous", key="prev"):
         st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
-    if st.button("Next", key="next"):  # noqa: E731
-        st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
-with ctrl2:
-    if st.button("Run All", on_click=run_all, key="runall", type='primary'):  # noqa: E731
-        pass
+    if next.button("Next", key="next"):
+        st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps-1)
+with col2:
+    if st.button("Run All", key="runall", on_click=lambda: st.session_state.update({"elapsed": time.time() - start_time})):
+        start_time = time.time()
+        _ = generators[st.session_state.alg]()
 
 # Metrics
-title1, title2 = st.columns([1, 1])
-title1.metric("Step", f"{st.session_state.step_idx + 1}/{max_steps}")
-title2.metric("Elapsed (s)", f"{st.session_state.elapsed:.4f}")
+m1, m2 = st.columns(2)
+m1.metric("Step", f"{st.session_state.step_idx+1}/{max_steps}")
 
-# Graph
-g1, g2, g3 = st.columns([1, 3, 1])
-with g2:
-    draw_graph(steps[st.session_state.step_idx])
+m2.metric("Elapsed (s)", f"{st.session_state.elapsed:.4f}")
+
+# Graph display
+_, gc, _ = st.columns([1,3,1])
+with gc:
+    draw_graph(G, steps[st.session_state.step_idx])
 
 # Explanation
-desc = steps[st.session_state.step_idx]
-st.write(f"Node color assignments (1-based indices): {desc}")
+st.markdown(f"**Current assignment:** {steps[st.session_state.step_idx]}")
