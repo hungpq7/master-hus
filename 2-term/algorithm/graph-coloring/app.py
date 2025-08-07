@@ -205,17 +205,6 @@ def draw_graph(colors):
     dot += "}"
     st.graphviz_chart(dot)
 
-# Styles
-st.markdown(
-    """
-<style>
-.white-btn .stButton>button { background-color: white; color: black; }
-.red-btn .stButton>button { background-color: red; color: white; }
-</style>
-    """,
-    unsafe_allow_html=True,
-)
-
 # Controls
 def run_all():
     start = time.time()
@@ -243,6 +232,27 @@ with graph_col:
     draw_graph(steps[st.session_state.step_idx])
 
 # Explanation
+prev_desc = None
+if st.session_state.step_idx > 0:
+    prev_desc = steps[st.session_state.step_idx - 1]
 desc = steps[st.session_state.step_idx]
-st.write("**Decision process at this step:**")
-st.write(f"Node color assignments: {desc}")
+next_desc = None
+if st.session_state.step_idx < max_steps - 1:
+    next_desc = steps[st.session_state.step_idx + 1]
+
+st.write("**Detailed explanation:**")
+if prev_desc is not None:
+    changes = [i for i, (p, c) in enumerate(zip(prev_desc, desc)) if p != c]
+    if changes:
+        for i in changes:
+            st.write(f"- Node {i}: changed from color {prev_desc[i]} to {desc[i]}")
+    else:
+        st.write("- No color changes from the previous step.")
+else:
+    st.write("- Initial coloring applied.")
+
+st.write(f"**Current step ({st.session_state.step_idx + 1}):** assignment {desc}")
+if next_desc is not None:
+    st.write(f"**Next step will evaluate:** assignment {next_desc}")
+else:
+    st.write("**This is the final valid coloring.**")
