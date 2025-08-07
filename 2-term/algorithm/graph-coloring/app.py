@@ -224,18 +224,13 @@ def run_all():
 
 ctrl1, ctrl2 = st.columns([1, 1])
 with ctrl1:
-    st.markdown('<div class="white-btn" style="display: flex; align-items: center;">', unsafe_allow_html=True)
     if st.button("Previous", key="prev"):  # noqa: E731
         st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
-    st.markdown("&nbsp;", unsafe_allow_html=True)
     if st.button("Next", key="next"):  # noqa: E731
         st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
-    st.markdown('</div>', unsafe_allow_html=True)
 with ctrl2:
-    st.markdown('<div class="red-btn">', unsafe_allow_html=True)
-    if st.button("Run All", on_click=run_all, key="runall"):  # noqa: E731
+    if st.button("Run All", on_click=run_all, key="runall", type='primary'):  # noqa: E731
         pass
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # Metrics
 title1, title2 = st.columns([1, 1])
