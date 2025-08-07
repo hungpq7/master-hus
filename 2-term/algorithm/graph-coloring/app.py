@@ -117,20 +117,34 @@ def dsatur_steps(graph):
         yield colors.copy()
 
 
-# Sidebar controls
-alg = st.sidebar.selectbox(
+# Sidebar title and controls
+def reset_step():
+    st.session_state.step_idx = 0
+    st.session_state.elapsed = 0.0
+
+st.sidebar.title("GRAPH COLORING")
+st.sidebar.selectbox(
     "Algorithm",
     ["Brute Force", "Backtracking", "Greedy", "Welsh-Powell", "DSATUR"],
+    key="alg",
+    on_change=reset_step,
+)
+st.sidebar.selectbox(
+    "Graph",
+    ["4-cycle", "Custom"],
+    key="graph_option",
+    on_change=reset_step,
 )
 
+alg = st.session_state.alg
+graph_option = st.session_state.graph_option
 
-# Graph selection
-graph_option = st.sidebar.selectbox("Graph", ["4-cycle", "Custom"])
+# Build graph
 if graph_option == "4-cycle":
     G = nx.cycle_graph(4)
 else:
     adj = st.sidebar.text_area(
-        "Edges (u v per line):", "0 1\n1 2\n2 3\n3 0"
+        "Edges (u v per line):", "0 1\n1 2\n2 3\n3 0", key="edges"
     )
     G = nx.Graph()
     nodes = set()
@@ -140,13 +154,11 @@ else:
         G.add_edge(u, v)
     G.add_nodes_from(nodes)
 
-
-# Color count for exact algorithms
+# Color count
 if alg in ["Brute Force", "Backtracking"]:
     k = st.sidebar.number_input(
-        "Colors", min_value=1, max_value=10, value=3
+        "Colors", min_value=1, max_value=10, value=3, key="k", on_change=reset_step
     )
-
 
 # Generate steps
 def get_steps():
@@ -161,19 +173,17 @@ def get_steps():
     if alg == "DSATUR":
         return list(dsatur_steps(G))
 
-
 steps = get_steps()
 max_steps = len(steps)
 
-
-# Initialize session state
+# Session state
 if "step_idx" not in st.session_state:
     st.session_state.step_idx = 0
 if "elapsed" not in st.session_state:
     st.session_state.elapsed = 0.0
 
+# Draw graph
 
-# Draw graph function
 def draw_graph(colors):
     dot = ("graph G {\n"
            "  graph [splines=true, overlap=false, sep=0.5, "
@@ -187,19 +197,15 @@ def draw_graph(colors):
         "fontcolor=\"#000000\", fontsize=12];\n"
     )
     dot += "  edge [color=\"#444444\", penwidth=1.5];\n"
-
     for i, c in enumerate(colors):
         fill = palette[c % len(palette)]
         dot += f"  {i} [fillcolor=\"{fill}\"];\n"
-
     for u, v in G.edges():
         dot += f"  {u} -- {v};\n"
-
     dot += "}"
     st.graphviz_chart(dot)
 
-
-# Custom button styles
+# Styles
 st.markdown(
     """
 <style>
@@ -210,32 +216,38 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
-# Line 1: Navigation & Run All
+# Controls
 def run_all():
     start = time.time()
     _ = get_steps()
     st.session_state.elapsed = time.time() - start
 
-ctrl_col1, ctrl_col2 = st.columns([1, 1])
-with ctrl_col1:
+ctrl1, ctrl2 = st.columns([1, 1])
+with ctrl1:
+    st.markdown('<div class="white-btn" style="display: flex; align-items: center;">', unsafe_allow_html=True)
     if st.button("Previous", key="prev"):  # noqa: E731
         st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
+    st.markdown("&nbsp;", unsafe_allow_html=True)
     if st.button("Next", key="next"):  # noqa: E731
         st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
-
-with ctrl_col2:
+    st.markdown('</div>', unsafe_allow_html=True)
+with ctrl2:
+    st.markdown('<div class="red-btn">', unsafe_allow_html=True)
     if st.button("Run All", on_click=run_all, key="runall"):  # noqa: E731
         pass
+    st.markdown('</div>', unsafe_allow_html=True)
 
+# Metrics
+title1, title2 = st.columns([1, 1])
+title1.metric("Step", f"{st.session_state.step_idx + 1}/{max_steps}")
+title2.metric("Elapsed (s)", f"{st.session_state.elapsed:.4f}")
 
-# Line 2: Metrics
-met_col1, met_col2 = st.columns([1, 1])
-met_col1.metric("Step", f"{st.session_state.step_idx + 1}/{max_steps}")
-met_col2.metric("Elapsed (s)", f"{st.session_state.elapsed:.4f}")
-
-
-# Centered, larger graph layout
+# Graph
 _, graph_col, _ = st.columns([1, 3, 1])
 with graph_col:
     draw_graph(steps[st.session_state.step_idx])
+
+# Explanation
+desc = steps[st.session_state.step_idx]
+st.write("**Decision process at this step:**")
+st.write(f"Node color assignments: {desc}")
