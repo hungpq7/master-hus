@@ -103,6 +103,9 @@ st.sidebar.selectbox(
         "Complete Graph",
         "Path Graph",
         "Star Graph",
+        "Erdos-Renyi Random",
+        "Barabasi-Albert",
+        "Watts-Strogatz",
         "Custom",
     ],
     key="graph_option",
@@ -130,6 +133,41 @@ elif graph_option == "Star Graph":
         "Number of leaves", min_value=1, max_value=20, value=4, key="star_n", on_change=reset_step
     )
     G = nx.star_graph(n)
+elif graph_option == "Erdos-Renyi Random":
+    n = st.sidebar.number_input(
+        "Number of nodes", min_value=1, max_value=50, value=10,
+        key="er_n", on_change=reset_step
+    )
+    p = st.sidebar.slider(
+        "Edge probability p", min_value=0.0, max_value=1.0, value=0.3,
+        key="er_p", on_change=reset_step
+    )
+    G = nx.erdos_renyi_graph(n, p)
+elif graph_option == "Barabasi-Albert":
+    n = st.sidebar.number_input(
+        "Number of nodes", min_value=2, max_value=50, value=10,
+        key="ba_n", on_change=reset_step
+    )
+    m = st.sidebar.number_input(
+        "Edges to attach (m)", min_value=1, max_value=n-1, value=2,
+        key="ba_m", on_change=reset_step
+    )
+    G = nx.barabasi_albert_graph(n, m)
+elif graph_option == "Watts-Strogatz":
+    n = st.sidebar.number_input(
+        "Number of nodes", min_value=3, max_value=50, value=12,
+        key="ws_n", on_change=reset_step
+    )
+    k = st.sidebar.number_input(
+        "Each node connected to k nearest neighbors", min_value=2, max_value=n-1, value=4,
+        key="ws_k", on_change=reset_step
+    )
+    p = st.sidebar.slider(
+        "Rewiring probability", min_value=0.0, max_value=1.0, value=0.1,
+        key="ws_p", on_change=reset_step
+    )
+    G = nx.watts_strogatz_graph(n, k, p)
+
 else:
     adj = st.sidebar.text_area(
         "Edges (u v per line):", "1 2\n2 3\n3 4\n4 1", key="edges"
