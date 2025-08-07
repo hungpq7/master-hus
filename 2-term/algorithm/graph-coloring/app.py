@@ -98,7 +98,13 @@ st.sidebar.selectbox(
 )
 st.sidebar.selectbox(
     "Graph",
-    ["4-cycle", "Custom"],
+    [
+        "4-cycle",
+        "Complete Graph",
+        "Path Graph",
+        "Star Graph",
+        "Custom",
+    ],
     key="graph_option",
     on_change=reset_step,
 )
