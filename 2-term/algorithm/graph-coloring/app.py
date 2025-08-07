@@ -219,20 +219,14 @@ def run_all():
 
 ctrl_col1, ctrl_col2 = st.columns([1, 1])
 with ctrl_col1:
-    st.markdown('<div class="white-btn">', unsafe_allow_html=True)
     if st.button("Previous", key="prev"):  # noqa: E731
         st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
-    st.markdown("&nbsp;", unsafe_allow_html=True)
-    st.markdown("&nbsp;" * 10, unsafe_allow_html=True)
     if st.button("Next", key="next"):  # noqa: E731
         st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with ctrl_col2:
-    st.markdown('<div class="red-btn">', unsafe_allow_html=True)
     if st.button("Run All", on_click=run_all, key="runall"):  # noqa: E731
         pass
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # Line 2: Metrics
