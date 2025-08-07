@@ -1,37 +1,13 @@
 import streamlit as st
 import networkx as nx
 import time
+import itertools
 
-
-# Step generators
 def bruteforce_steps(graph, k):
     n = graph.number_of_nodes()
-    colors = [0] * n  # 0 represents unassigned or color 0
-
-    def is_valid():
-        for u, v in graph.edges():
-            if colors[u] == colors[v] and colors[u] != 0:
-                return False
-        return True
-
-    while True:
-        if is_valid():
-            break
-
-        i = 0
-        while i < n:
-            colors[i] += 1
-            if colors[i] <= k:
-                break
-            colors[i] = 0
-            i += 1
-
-        if i == n:
-            break
-
-        yield colors.copy()
-
-    yield colors.copy()
+    # iterate over all possible color assignments (1..k)^n
+    for assignment in itertools.product(range(1, k+1), repeat=n):
+        yield list(assignment)
 
 
 def backtracking_steps(graph, k):
