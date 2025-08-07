@@ -120,7 +120,6 @@ def dsatur_steps(graph):
 # Sidebar title and controls
 def reset_step():
     st.session_state.step_idx = 0
-    st.session_state.elapsed = 0.0
 
 st.sidebar.title("GRAPH COLORING")
 st.sidebar.selectbox(
@@ -136,8 +135,8 @@ st.sidebar.selectbox(
     on_change=reset_step,
 )
 
-alg = st.session_state.alg
-graph_option = st.session_state.graph_option
+alg = st.session_state.get("alg", "Brute Force")
+graph_option = st.session_state.get("graph_option", "4-cycle")
 
 # Build graph
 if graph_option == "4-cycle":
@@ -149,9 +148,7 @@ else:
     G = nx.Graph()
     for line in adj.splitlines():
         u, v = map(int, line.split())
-        # convert 1-based input to 0-based internal
         G.add_edge(u-1, v-1)
-    # ensure nodes present even if isolated
     nodes = {u for edge in G.edges() for u in edge}
     G.add_nodes_from(nodes)
 
@@ -161,6 +158,8 @@ if alg in ["Brute Force", "Backtracking"]:
         "Colors", min_value=1, max_value=10, value=3, key="k", on_change=reset_step
     )
     st.sidebar.write(f"Number of colors: {k}")
+else:
+    k = None
 
 # Generate steps
 def get_steps():
@@ -178,16 +177,28 @@ def get_steps():
 steps = get_steps()
 max_steps = len(steps)
 
-# Session state
+# Initialize session state
 if "step_idx" not in st.session_state:
     st.session_state.step_idx = 0
-if "elapsed" not in st.session_state:
-    st.session_state.elapsed = 0.0
+
+# Controls and layout
+col1, col2 = st.columns([1, 1])
+with col1:
+    if st.button("Previous"):
+        st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
+    if st.button("Next"):
+        st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
+with col2:
+    if st.button("Run All"):
+        # Shortcut to jump to the last step
+        st.session_state.step_idx = max_steps - 1
+
+# Metrics
+st.metric("Step", f"{st.session_state.step_idx + 1}/{max_steps}")
 
 # Draw graph
 
 def draw_graph(colors):
-    # Increase node separation (nodesep, ranksep) and reduce node size via width
     dot = (
         "graph G {\n"
         "  graph [splines=true, overlap=false, sep=1.0, ranksep=1.0, nodesep=1.0, layout=neato];\n"
@@ -196,51 +207,22 @@ def draw_graph(colors):
         "#FFFFFF", "#E24A33", "#348ABD", "#988ED5", "#777777",
         "#FBC15E", "#8EBA42", "#FFB5B8", "#B15E81", "#7F7F7F",
     ]
-    # Set fixed node size with smaller width and height
     dot += (
         "  node [shape=circle, style=filled, color=\"#333333\", "
         "fontcolor=\"#000000\", fontsize=14, width=0.5, height=0.5];\n"
     )
     dot += "  edge [color=\"#444444\", penwidth=2];\n"
-
     for idx, c in enumerate(colors):
         node_id = idx + 1
         fill = palette[c] if c < len(palette) else palette[0]
-        dot += (f"  {node_id} [label=\"{node_id}\", "
-                f"fillcolor=\"{fill}\"];\n")
-
+        dot += f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\"];\n"
     for u, v in G.edges():
         dot += f"  {u+1} -- {v+1};\n"
-
     dot += "}"
     st.graphviz_chart(dot)
 
-# Controls
-def run_all():
-    start = time.time()
-    _ = get_steps()
-    st.session_state.elapsed = time.time() - start
+# Render graph and info
+current_colors = steps[st.session_state.step_idx]
 
-ctrl1, ctrl2 = st.columns([1, 1])
-with ctrl1:
-    if st.button("Previous", key="prev"):  # noqa: E731
-        st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
-    if st.button("Next", key="next"):  # noqa: E731
-        st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
-with ctrl2:
-    if st.button("Run All", on_click=run_all, key="runall", type='primary'):  # noqa: E731
-        pass
-
-# Metrics
-title1, title2 = st.columns([1, 1])
-title1.metric("Step", f"{st.session_state.step_idx + 1}/{max_steps}")
-title2.metric("Elapsed (s)", f"{st.session_state.elapsed:.4f}")
-
-# Graph
-g1, g2, g3 = st.columns([1, 3, 1])
-with g2:
-    draw_graph(steps[st.session_state.step_idx])
-
-# Explanation
-desc = steps[st.session_state.step_idx]
-st.write(f"Node color assignments (1-based indices): {desc}")
+draw_graph(current_colors)
+st.write(f"Node color assignments (1-based indices): {current_colors}")
