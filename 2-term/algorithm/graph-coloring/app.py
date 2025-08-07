@@ -103,7 +103,7 @@ st.sidebar.selectbox(
         "Complete Graph",
         "Path Graph",
         "Star Graph",
-        "Erdos-Renyi Random",
+        "Erdos-Renyi",
         "Barabasi-Albert",
         "Watts-Strogatz",
         "Custom",
