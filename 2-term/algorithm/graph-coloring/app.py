@@ -222,31 +222,67 @@ with col2:
     if st.button("Run All", type='primary'):
         st.session_state.step_idx = max_steps - 1
 
+# def draw_graph(colors):
+#     dot = (
+#         "graph G {\n"
+#         "  graph [splines=true, overlap=false, sep=1.0, ranksep=1.0, nodesep=1.0, layout=neato];\n"
+#     )
+#     palette = [
+#         "#FFFFFF", "#E24A33", "#348ABD", "#988ED5", "#777777",
+#         "#FBC15E", "#8EBA42", "#FFB5B8", "#B15E81", "#7F7F7F",
+#     ]
+#     dot += (
+#         "  node [shape=circle, style=filled, color=\"#333333\", "
+#         "fontcolor=\"#000000\", fontsize=14, width=0.5, height=0.5];\n"
+#     )
+#     dot += "  edge [color=\"#444444\", penwidth=2];\n"
+#     for idx, c in enumerate(colors):
+#         node_id = idx + 1
+#         fill = palette[c] if c < len(palette) else palette[0]
+#         dot += f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\"];\n"
+#     for u, v in G.edges():
+#         dot += f"  {u+1} -- {v+1};\n"
+#     dot += "}"
+#     st.graphviz_chart(dot)
+
+
 def draw_graph(colors):
+    # Compute a stable layout once per draw using a fixed seed
+    pos = nx.spring_layout(G, seed=42)
+
+    # Start Graphviz definition with pinned positions
     dot = (
         "graph G {\n"
-        "  graph [splines=true, overlap=false, sep=1.0, ranksep=1.0, nodesep=1.0, layout=neato];\n"
+        "  graph [splines=true, overlap=false, sep=1.0, "
+        "ranksep=1.0, nodesep=1.0, layout=neato, pin=true];\n"
     )
+
     palette = [
         "#FFFFFF", "#E24A33", "#348ABD", "#988ED5", "#777777",
         "#FBC15E", "#8EBA42", "#FFB5B8", "#B15E81", "#7F7F7F",
     ]
+
     dot += (
         "  node [shape=circle, style=filled, color=\"#333333\", "
-        "fontcolor=\"#000000\", fontsize=14, width=0.5, height=0.5];\n"
+        "fontcolor=\"#000000\", fontsize=14, width=0.5, height=0.5, pin=true];\n"
     )
     dot += "  edge [color=\"#444444\", penwidth=2];\n"
+
     for idx, c in enumerate(colors):
         node_id = idx + 1
         fill = palette[c] if c < len(palette) else palette[0]
-        dot += f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\"];\n"
+        x, y = pos[idx]
+        dot += (
+            f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\", "
+            f"pos=\"{x:.2f},{y:.2f}!\", pin=true];\n"
+        )
+
     for u, v in G.edges():
         dot += f"  {u+1} -- {v+1};\n"
+
     dot += "}"
     st.graphviz_chart(dot)
 
-# Render graph and info
 current_colors = steps[st.session_state.step_idx]
-
 draw_graph(current_colors)
 st.write(f"Node color assignments (1-based indices): {current_colors}")
