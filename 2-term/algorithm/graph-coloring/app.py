@@ -186,26 +186,27 @@ if "elapsed" not in st.session_state:
 # Draw graph
 
 def draw_graph(colors):
-    dot = "graph G {\n  graph [splines=true, overlap=false, sep=0.5, ranksep=0.5, layout=neato];\n"
+    # Increase node separation (nodesep, ranksep) and reduce node size via width
+    dot = (
+        "graph G {\n"
+        "  graph [splines=true, overlap=false, sep=1.0, ranksep=1.0, nodesep=1.0, layout=neato];\n"
+    )
     palette = [
-        "#FFFFFF",  # 0 = unassigned or white
-        "#E24A33",  # 1
-        "#348ABD",  # 2
-        "#988ED5",  # 3
-        "#777777",  # 4
-        "#FBC15E",  # 5
-        "#8EBA42",  # 6
-        "#FFB5B8",  # 7
-        "#B15E81",  # 8
-        "#7F7F7F",  # 9
+        "#FFFFFF", "#E24A33", "#348ABD", "#988ED5", "#777777",
+        "#FBC15E", "#8EBA42", "#FFB5B8", "#B15E81", "#7F7F7F",
     ]
-    dot += "  node [shape=circle, style=filled, color=\"#333333\", fontcolor=\"#000000\", fontsize=16];\n"
+    # Set fixed node size with smaller width and height
+    dot += (
+        "  node [shape=circle, style=filled, color=\"#333333\", "
+        "fontcolor=\"#000000\", fontsize=14, width=0.5, height=0.5];\n"
+    )
     dot += "  edge [color=\"#444444\", penwidth=2];\n"
 
     for idx, c in enumerate(colors):
         node_id = idx + 1
         fill = palette[c] if c < len(palette) else palette[0]
-        dot += f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\"];\n"
+        dot += (f"  {node_id} [label=\"{node_id}\", "
+                f"fillcolor=\"{fill}\"];\n")
 
     for u, v in G.edges():
         dot += f"  {u+1} -- {v+1};\n"
