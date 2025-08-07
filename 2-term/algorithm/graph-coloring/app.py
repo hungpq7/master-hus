@@ -109,6 +109,7 @@ if alg in ["Brute Force", "Backtracking"]:
     k = st.sidebar.number_input("Colors", min_value=1, max_value=10, value=3)
 
 # Generate steps
+
 def get_steps():
     if alg == "Brute Force":
         return list(bruteforce_steps(G, k))
@@ -124,43 +125,58 @@ def get_steps():
 steps = get_steps()
 max_steps = len(steps)
 
-# Initialize session state for step index
+# Initialize session state
 if 'step_idx' not in st.session_state:
     st.session_state.step_idx = 0
+if 'elapsed' not in st.session_state:
+    st.session_state.elapsed = 0.0
 
-# Run All button and elapsed time
-graph_col, time_col = st.columns([1,1])
-elapsed = None
-if graph_col.button("Run All"):
+# Custom button styles
+st.markdown("""
+<style>
+.white-btn .stButton>button { background-color: white; color: black; }
+.red-btn .stButton>button { background-color: red; color: white; }
+</style>
+""", unsafe_allow_html=True)
+
+# Line 1: Navigation & Run All
+def run_all():
     start = time.time()
     _ = get_steps()
-    elapsed = time.time() - start
-    time_col.write(f"Elapsed: {elapsed:.4f}s")
+    st.session_state.elapsed = time.time() - start
 
-# Navigation controls
-nav_col1, nav_col2, nav_col3 = st.columns([1,2,1])
-if nav_col1.button("Previous"):
-    st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
+ctrl_col1, ctrl_col2 = st.columns([1,1])
+with ctrl_col1:
+    st.markdown('<div class="white-btn">', unsafe_allow_html=True)
+    if st.button("Previous", key="prev"): st.session_state.step_idx = max(st.session_state.step_idx-1, 0)
+    if st.button("Next", key="next"): st.session_state.step_idx = min(st.session_state.step_idx+1, max_steps-1)
+    st.markdown('</div>', unsafe_allow_html=True)
+with ctrl_col2:
+    st.markdown('<div class="red-btn">', unsafe_allow_html=True)
+    if st.button("Run All", on_click=run_all, key="runall"): pass
+    st.markdown('</div>', unsafe_allow_html=True)
 
-step_info = nav_col2.text_input("Step", f"{st.session_state.step_idx+1}/{max_steps}", disabled=True)
+# Line 2: Metrics
+met_col1, met_col2 = st.columns([1,1])
+met_col1.metric("Step", f"{st.session_state.step_idx+1}/{max_steps}")
+met_col2.metric("Elapsed (s)", f"{st.session_state.elapsed:.4f}")
 
-if nav_col3.button("Next"):
-    st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps-1)
+# Centered, larger graph
+g1, g2, g3 = st.columns([1,3,1])
+with g2:
+    draw_graph(steps[st.session_state.step_idx])
 
-# Draw graph using Graphviz with node colors per step
-def draw_graph(colors):
-    dot = "graph G {\n"
-    dot += "  graph [splines=true, overlap=false, sep=0.5, ranksep=0.5, layout=neato];\n"
-    palette = ['#CCCCCC','#E24A33','#348ABD','#988ED5','#777777','#FBC15E','#8EBA42','#FFB5B8','#B15E81','#7F7F7F']
-    dot += "  node [shape=circle, style=filled, color=\"#333333\", fontcolor=\"#000000\", fontsize=12];\n"
-    dot += "  edge [color=\"#444444\", penwidth=1.5];\n"
-    for i, c in enumerate(colors):
-        fill = palette[c % len(palette)]
-        dot += f"  {i} [fillcolor=\"{fill}\"];\n"
-    for u, v in G.edges():
-        dot += f"  {u} -- {v};\n"
-    dot += "}"
-    st.graphviz_chart(dot)
-
-# Render current step
-draw_graph(steps[st.session_state.step_idx])
+# Color encoding explanation
+st.markdown("**Color encoding:**")
+st.markdown(
+    "- **0**: default/background (`#CCCCCC`)"
+    "- **1**: first color (`#E24A33`)"
+    "- **2**: second color (`#348ABD`)"
+    "- **3**: third color (`#988ED5`)"
+    "- **4**: fourth color (`#777777`)"
+    "- **5**: fifth color (`#FBC15E`)"
+    "- **6**: sixth color (`#8EBA42`)"
+    "- **7**: seventh color (`#FFB5B8`)"
+    "- **8**: eighth color (`#B15E81`)"
+    "- **9**: ninth color (`#7F7F7F`)"
+)
