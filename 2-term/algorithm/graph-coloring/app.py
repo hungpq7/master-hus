@@ -1,14 +1,6 @@
 import streamlit as st
 import networkx as nx
 import time
-import itertools
-
-def bruteforce_steps(graph, k):
-    n = graph.number_of_nodes()
-    # iterate over all possible color assignments (1..k)^n
-    for assignment in itertools.product(range(1, k+1), repeat=n):
-        yield list(assignment)
-
 
 def backtracking_steps(graph, k):
     n = graph.number_of_nodes()
@@ -100,7 +92,7 @@ def reset_step():
 st.sidebar.title("GRAPH COLORING")
 st.sidebar.selectbox(
     "Algorithm",
-    ["Brute Force", "Backtracking", "Greedy", "Welsh-Powell", "DSATUR"],
+    ["Backtracking", "Greedy", "Welsh-Powell", "DSATUR"],
     key="alg",
     on_change=reset_step,
 )
@@ -111,7 +103,7 @@ st.sidebar.selectbox(
     on_change=reset_step,
 )
 
-alg = st.session_state.get("alg", "Brute Force")
+alg = st.session_state.get("alg", "Backtracking")
 graph_option = st.session_state.get("graph_option", "4-cycle")
 
 # Build graph
@@ -129,7 +121,7 @@ else:
     G.add_nodes_from(nodes)
 
 # Color count
-if alg in ["Brute Force", "Backtracking"]:
+if alg in ["Backtracking"]:
     k = st.sidebar.number_input(
         "Colors", min_value=1, max_value=10, value=3, key="k", on_change=reset_step
     )
@@ -139,8 +131,6 @@ else:
 
 # Generate steps
 def get_steps():
-    if alg == "Brute Force":
-        return list(bruteforce_steps(G, k))
     if alg == "Backtracking":
         return list(backtracking_steps(G, k))
     if alg == "Greedy":
