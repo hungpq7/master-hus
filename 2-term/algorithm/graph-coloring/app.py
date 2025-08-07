@@ -160,6 +160,7 @@ if alg in ["Brute Force", "Backtracking"]:
     k = st.sidebar.number_input(
         "Colors", min_value=1, max_value=10, value=3, key="k", on_change=reset_step
     )
+    st.sidebar.write(f"Number of colors: {k}")
 
 # Generate steps
 def get_steps():
