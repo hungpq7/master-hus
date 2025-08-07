@@ -68,8 +68,32 @@ def welsh_powell_steps(graph):
         colors[v] = c
         yield colors.copy()
 
+
+def dsatur_steps(graph):
+    # DSATUR: choose next vertex by saturation degree, tie-break on degree
+    n = graph.number_of_nodes()
+    colors = [-1] * n
+    degrees = dict(graph.degree())
+    uncolored = set(graph.nodes())
+    while uncolored:
+        # saturation degree: number of distinct neighbor colors
+        sat_degrees = {v: len({colors[u] for u in graph.neighbors(v) if colors[u] != -1}) for v in uncolored}
+        max_sat = max(sat_degrees.values())
+        # candidates with maximum saturation
+        candidates = [v for v, sat in sat_degrees.items() if sat == max_sat]
+        # tie-break by degree
+        v = max(candidates, key=lambda x: degrees[x])
+        # assign smallest available color
+        used = {colors[u] for u in graph.neighbors(v) if colors[u] != -1}
+        c = 0
+        while c in used:
+            c += 1
+        colors[v] = c
+        uncolored.remove(v)
+        yield colors.copy()
+
 # Sidebar controls
-alg = st.sidebar.selectbox("Algorithm", ["Brute Force", "Backtracking", "Greedy", "Welsh-Powell"])
+alg = st.sidebar.selectbox("Algorithm", ["Brute Force", "Backtracking", "Greedy", "Welsh-Powell", "DSATUR"])
 
 # Graph selection
 graph_option = st.sidebar.selectbox("Graph", ["4-cycle", "Custom"])
@@ -96,8 +120,10 @@ elif alg == "Backtracking":
     steps = list(backtracking_steps(G, k))
 elif alg == "Greedy":
     steps = list(greedy_steps(G))
-else:
+elif alg == "Welsh-Powell":
     steps = list(welsh_powell_steps(G))
+elif alg == "DSATUR":
+    steps = list(dsatur_steps(G))
 
 # Run All button and elapsed time
 graph_col, time_col = st.columns([1,1])
