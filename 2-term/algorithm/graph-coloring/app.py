@@ -109,6 +109,21 @@ graph_option = st.session_state.get("graph_option", "4-cycle")
 # Build graph
 if graph_option == "4-cycle":
     G = nx.cycle_graph(4)
+elif graph_option == "Complete Graph":
+    n = st.sidebar.number_input(
+        "Number of nodes", min_value=1, max_value=20, value=5, key="complete_n", on_change=reset_step
+    )
+    G = nx.complete_graph(n)
+elif graph_option == "Path Graph":
+    n = st.sidebar.number_input(
+        "Number of nodes", min_value=1, max_value=20, value=5, key="path_n", on_change=reset_step
+    )
+    G = nx.path_graph(n)
+elif graph_option == "Star Graph":
+    n = st.sidebar.number_input(
+        "Number of leaves", min_value=1, max_value=20, value=4, key="star_n", on_change=reset_step
+    )
+    G = nx.star_graph(n)
 else:
     adj = st.sidebar.text_area(
         "Edges (u v per line):", "1 2\n2 3\n3 4\n4 1", key="edges"
