@@ -149,7 +149,7 @@ if "step_idx" not in st.session_state:
 
 col1, col2 = st.columns([1, 1])
 with col1:
-    sub1, sub2, _ = st.columns([1,1,2])
+    sub1, sub2, _ = st.columns([1,1,1])
     with sub1:
         if st.button("Previous"):
             st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
