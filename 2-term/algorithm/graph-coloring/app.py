@@ -219,24 +219,17 @@ def run_all():
 
 ctrl_col1, ctrl_col2 = st.columns([1, 1])
 with ctrl_col1:
-    st.markdown(
-        '<div class="white-btn">', unsafe_allow_html=True
-    )
-    sub1, sub2 = st.columns(2)
-    if sub1.button("Previous", key="prev"):  # noqa: E731
-        st.session_state.step_idx = max(
-            st.session_state.step_idx - 1, 0
-        )
-    if sub2.button("Next", key="next"):  # noqa: E731
-        st.session_state.step_idx = min(
-            st.session_state.step_idx + 1, max_steps - 1
-        )
+    st.markdown('<div class="white-btn">', unsafe_allow_html=True)
+    if st.button("Previous", key="prev"):  # noqa: E731
+        st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
+    st.markdown("&nbsp;", unsafe_allow_html=True)
+    st.markdown("&nbsp;" * 10, unsafe_allow_html=True)
+    if st.button("Next", key="next"):  # noqa: E731
+        st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
     st.markdown('</div>', unsafe_allow_html=True)
 
 with ctrl_col2:
-    st.markdown(
-        '<div class="red-btn">', unsafe_allow_html=True
-    )
+    st.markdown('<div class="red-btn">', unsafe_allow_html=True)
     if st.button("Run All", on_click=run_all, key="runall"):  # noqa: E731
         pass
     st.markdown('</div>', unsafe_allow_html=True)
@@ -245,29 +238,10 @@ with ctrl_col2:
 # Line 2: Metrics
 met_col1, met_col2 = st.columns([1, 1])
 met_col1.metric("Step", f"{st.session_state.step_idx + 1}/{max_steps}")
-met_col2.metric(
-    "Elapsed (s)", f"{st.session_state.elapsed:.4f}"
-)
+met_col2.metric("Elapsed (s)", f"{st.session_state.elapsed:.4f}")
 
 
-# Centered, larger graph
-g1, g2, g3 = st.columns([1, 3, 1])
-with g2:
+# Centered, larger graph layout
+_, graph_col, _ = st.columns([1, 3, 1])
+with graph_col:
     draw_graph(steps[st.session_state.step_idx])
-
-
-# Color encoding explanation
-color_legend = """
-**Color encoding:**
-- **0**: default/background (`#CCCCCC`)
-- **1**: first color (`#E24A33`)
-- **2**: second color (`#348ABD`)
-- **3**: third color (`#988ED5`)
-- **4**: fourth color (`#777777`)
-- **5**: fifth color (`#FBC15E`)
-- **6**: sixth color (`#8EBA42`)
-- **7**: seventh color (`#FFB5B8`)
-- **8**: eighth color (`#B15E81`)
-- **9**: ninth color (`#7F7F7F`)
-"""
-st.markdown(color_legend)
