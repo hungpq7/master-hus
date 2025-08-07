@@ -133,42 +133,43 @@ elif graph_option == "Star Graph":
         "Number of leaves", min_value=1, max_value=20, value=4, key="star_n", on_change=reset_step
     )
     G = nx.star_graph(n)
-elif graph_option == "Erdos-Renyi Random":
-    n = st.sidebar.number_input(
-        "Number of nodes", min_value=1, max_value=50, value=10,
-        key="er_n", on_change=reset_step
-    )
-    p = st.sidebar.slider(
-        "Edge probability p", min_value=0.0, max_value=1.0, value=0.3,
-        key="er_p", on_change=reset_step
-    )
-    G = nx.erdos_renyi_graph(n, p)
-elif graph_option == "Barabasi-Albert":
-    n = st.sidebar.number_input(
-        "Number of nodes", min_value=2, max_value=50, value=10,
-        key="ba_n",
-        # on_change=reset_step
-    )
-    m = st.sidebar.number_input(
-        "Edges to attach (m)", min_value=1, max_value=n-1, value=2,
-        key="ba_m",
-        # on_change=reset_step
-    )
-    G = nx.barabasi_albert_graph(n, m)
-elif graph_option == "Watts-Strogatz":
-    n = st.sidebar.number_input(
-        "Number of nodes", min_value=3, max_value=50, value=12,
-        key="ws_n", on_change=reset_step
-    )
-    k = st.sidebar.number_input(
-        "Each node connected to k nearest neighbors", min_value=2, max_value=n-1, value=4,
-        key="ws_k", on_change=reset_step
-    )
-    p = st.sidebar.slider(
-        "Rewiring probability", min_value=0.0, max_value=1.0, value=0.1,
-        key="ws_p", on_change=reset_step
-    )
-    G = nx.watts_strogatz_graph(n, k, p)
+
+elif graph_option in ["Erdos-Renyi", "Barabasi-Albert", "Watts-Strogatz"]:
+    # sidebar inputs for the three types
+    if graph_option == "Erdos-Renyi":
+        n = st.sidebar.number_input("n (nodes)", 1, 100, 10, key="er_n", on_change=reset_step)
+        p = st.sidebar.slider("p (prob)", 0.0, 1.0, 0.3, key="er_p", on_change=reset_step)
+        params = {"n": n, "p": p}
+
+    elif graph_option == "Barabasi-Albert":
+        n = st.sidebar.number_input("n (nodes)", 1, 100, 10, key="ba_n", on_change=reset_step)
+        m = st.sidebar.number_input("m (links)", 1, n-1, 2, key="ba_m", on_change=reset_step)
+        params = {"n": n, "m": m}
+
+    else:  # Watts-Strogatz
+        n = st.sidebar.number_input("n (nodes)", 1, 100, 10, key="ws_n", on_change=reset_step)
+        k = st.sidebar.number_input("k (neigh)", 0, n-1, 4, key="ws_k", on_change=reset_step)
+        p = st.sidebar.slider("p (rewire)", 0.0, 1.0, 0.1, key="ws_p", on_change=reset_step)
+        params = {"n": n, "k": k, "p": p}
+
+    # regenerate only if type or params changed
+    if (
+        "rand_graph" not in st.session_state
+        or st.session_state.rand_graph_option != graph_option
+        or st.session_state.rand_params != params
+    ):
+        if graph_option == "Erdos-Renyi":
+            G = nx.erdos_renyi_graph(n, p)
+        elif graph_option == "Barabasi-Albert":
+            G = nx.barabasi_albert_graph(n, m)
+        else:
+            G = nx.watts_strogatz_graph(n, k, p)
+
+        st.session_state.rand_graph = G
+        st.session_state.rand_graph_option = graph_option
+        st.session_state.rand_params = params
+    else:
+        G = st.session_state.rand_graph
 
 else:
     adj = st.sidebar.text_area(
@@ -222,64 +223,26 @@ with col2:
     if st.button("Run All", type='primary'):
         st.session_state.step_idx = max_steps - 1
 
-# def draw_graph(colors):
-#     dot = (
-#         "graph G {\n"
-#         "  graph [splines=true, overlap=false, sep=1.0, ranksep=1.0, nodesep=1.0, layout=neato];\n"
-#     )
-#     palette = [
-#         "#FFFFFF", "#E24A33", "#348ABD", "#988ED5", "#777777",
-#         "#FBC15E", "#8EBA42", "#FFB5B8", "#B15E81", "#7F7F7F",
-#     ]
-#     dot += (
-#         "  node [shape=circle, style=filled, color=\"#333333\", "
-#         "fontcolor=\"#000000\", fontsize=14, width=0.5, height=0.5];\n"
-#     )
-#     dot += "  edge [color=\"#444444\", penwidth=2];\n"
-#     for idx, c in enumerate(colors):
-#         node_id = idx + 1
-#         fill = palette[c] if c < len(palette) else palette[0]
-#         dot += f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\"];\n"
-#     for u, v in G.edges():
-#         dot += f"  {u+1} -- {v+1};\n"
-#     dot += "}"
-#     st.graphviz_chart(dot)
-
-
 def draw_graph(colors):
-    # Compute a stable layout once per draw using a fixed seed
-    pos = nx.spring_layout(G, seed=42)
-
-    # Start Graphviz definition with pinned positions
     dot = (
         "graph G {\n"
-        "  graph [splines=true, overlap=false, sep=1.0, "
-        "ranksep=1.0, nodesep=1.0, layout=neato, pin=true];\n"
+        "  graph [splines=true, overlap=false, sep=1.0, ranksep=1.0, nodesep=1.0, layout=neato];\n"
     )
-
     palette = [
         "#FFFFFF", "#E24A33", "#348ABD", "#988ED5", "#777777",
         "#FBC15E", "#8EBA42", "#FFB5B8", "#B15E81", "#7F7F7F",
     ]
-
     dot += (
         "  node [shape=circle, style=filled, color=\"#333333\", "
-        "fontcolor=\"#000000\", fontsize=14, width=0.5, height=0.5, pin=true];\n"
+        "fontcolor=\"#000000\", fontsize=14, width=0.5, height=0.5];\n"
     )
     dot += "  edge [color=\"#444444\", penwidth=2];\n"
-
     for idx, c in enumerate(colors):
         node_id = idx + 1
         fill = palette[c] if c < len(palette) else palette[0]
-        x, y = pos[idx]
-        dot += (
-            f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\", "
-            f"pos=\"{x:.2f},{y:.2f}!\", pin=true];\n"
-        )
-
+        dot += f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\"];\n"
     for u, v in G.edges():
         dot += f"  {u+1} -- {v+1};\n"
-
     dot += "}"
     st.graphviz_chart(dot)
 
