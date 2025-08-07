@@ -6,11 +6,11 @@ import time
 # Step generators
 def bruteforce_steps(graph, k):
     n = graph.number_of_nodes()
-    colors = [1] * n  # start all at first color 1 (no unassigned state)
+    colors = [0] * n  # 0 represents unassigned or color 0
 
     def is_valid():
         for u, v in graph.edges():
-            if colors[u] == colors[v]:
+            if colors[u] == colors[v] and colors[u] != 0:
                 return False
         return True
 
@@ -23,7 +23,7 @@ def bruteforce_steps(graph, k):
             colors[i] += 1
             if colors[i] <= k:
                 break
-            colors[i] = 1
+            colors[i] = 0
             i += 1
 
         if i == n:
@@ -36,12 +36,11 @@ def bruteforce_steps(graph, k):
 
 def backtracking_steps(graph, k):
     n = graph.number_of_nodes()
-    colors = [0] * n  # 0 represents unassigned
+    colors = [0] * n
     v = 0
 
     while 0 <= v < n:
         colors[v] += 1
-        # skip to next valid color
         while (
             colors[v] <= k
             and any(
@@ -145,14 +144,15 @@ if graph_option == "4-cycle":
     G = nx.cycle_graph(4)
 else:
     adj = st.sidebar.text_area(
-        "Edges (u v per line):", "0 1\n1 2\n2 3\n3 0", key="edges"
+        "Edges (u v per line):", "1 2\n2 3\n3 4\n4 1", key="edges"
     )
     G = nx.Graph()
-    nodes = set()
     for line in adj.splitlines():
         u, v = map(int, line.split())
-        nodes.update([u, v])
-        G.add_edge(u, v)
+        # convert 1-based input to 0-based internal
+        G.add_edge(u-1, v-1)
+    # ensure nodes present even if isolated
+    nodes = {u for edge in G.edges() for u in edge}
     G.add_nodes_from(nodes)
 
 # Color count
@@ -186,11 +186,9 @@ if "elapsed" not in st.session_state:
 # Draw graph
 
 def draw_graph(colors):
-    dot = ("graph G {\n"
-           "  graph [splines=true, overlap=false, sep=0.5, "
-           "ranksep=0.5, layout=neato];\n")
+    dot = "graph G {\n  graph [splines=true, overlap=false, sep=0.5, ranksep=0.5, layout=neato];\n"
     palette = [
-        "#FFFFFF",  # 0 = white/unassigned
+        "#FFFFFF",  # 0 = unassigned or white
         "#E24A33",  # 1
         "#348ABD",  # 2
         "#988ED5",  # 3
@@ -201,16 +199,17 @@ def draw_graph(colors):
         "#B15E81",  # 8
         "#7F7F7F",  # 9
     ]
-    dot += (
-        "  node [shape=circle, style=filled, color=\"#333333\", "
-        "fontcolor=\"#000000\", fontsize=12];\n"
-    )
-    dot += "  edge [color=\"#444444\", penwidth=1.5];\n"
-    for i, c in enumerate(colors):
+    dot += "  node [shape=circle, style=filled, color=\"#333333\", fontcolor=\"#000000\", fontsize=16];\n"
+    dot += "  edge [color=\"#444444\", penwidth=2];\n"
+
+    for idx, c in enumerate(colors):
+        node_id = idx + 1
         fill = palette[c] if c < len(palette) else palette[0]
-        dot += f"  {i} [fillcolor=\"{fill}\"];\n"
+        dot += f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\"];\n"
+
     for u, v in G.edges():
-        dot += f"  {u} -- {v};\n"
+        dot += f"  {u+1} -- {v+1};\n"
+
     dot += "}"
     st.graphviz_chart(dot)
 
@@ -236,10 +235,10 @@ title1.metric("Step", f"{st.session_state.step_idx + 1}/{max_steps}")
 title2.metric("Elapsed (s)", f"{st.session_state.elapsed:.4f}")
 
 # Graph
-_, graph_col, _ = st.columns([1, 3, 1])
-with graph_col:
+g1, g2, g3 = st.columns([1, 3, 1])
+with g2:
     draw_graph(steps[st.session_state.step_idx])
 
 # Explanation
 desc = steps[st.session_state.step_idx]
-st.write(f"Node color assignments (0 = unassigned): {desc}")
+st.write(f"Node color assignments (1-based indices): {desc}")
