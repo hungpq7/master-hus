@@ -181,7 +181,6 @@ max_steps = len(steps)
 if "step_idx" not in st.session_state:
     st.session_state.step_idx = 0
 
-# Controls and layout
 col1, col2 = st.columns([1, 1])
 with col1:
     if st.button("Previous"):
@@ -189,8 +188,7 @@ with col1:
     if st.button("Next"):
         st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
 with col2:
-    if st.button("Run All"):
-        # Shortcut to jump to the last step
+    if st.button("Run All", type='primary'):
         st.session_state.step_idx = max_steps - 1
 
 # Metrics
