@@ -12,13 +12,13 @@ def reset_step():
 
 st.sidebar.title("GRAPH COLORING")
 st.sidebar.selectbox(
-    "Algorithm",
+    "ALGORITHM",
     ["Backtracking", "Greedy", "Welsh-Powell", "DSATUR"],
     key="alg",
     on_change=reset_step,
 )
 st.sidebar.selectbox(
-    "Graph",
+    "GRAPH",
     [
         "Cycle", "Complete", "Path",
         "Erdos-Renyi", "Barabasi-Albert", "Watts-Strogatz",
@@ -33,17 +33,17 @@ graph_option = st.session_state.get("graph_option", "Cycle")
 
 if graph_option == "Cycle":
     n = st.sidebar.number_input(
-        "Number of nodes", min_value=1, max_value=20, value=5, key="complete_n", on_change=reset_step
+        "NODES", min_value=1, max_value=20, value=5, key="complete_n", on_change=reset_step
     )
     G = nx.cycle_graph(n)
 elif graph_option == "Complete Graph":
     n = st.sidebar.number_input(
-        "Number of nodes", min_value=1, max_value=20, value=5, key="complete_n", on_change=reset_step
+        "NODES", min_value=1, max_value=20, value=5, key="complete_n", on_change=reset_step
     )
     G = nx.complete_graph(n)
 elif graph_option == "Path Graph":
     n = st.sidebar.number_input(
-        "Number of nodes", min_value=1, max_value=20, value=5, key="path_n", on_change=reset_step
+        "NODES", min_value=1, max_value=20, value=5, key="path_n", on_change=reset_step
     )
     G = nx.path_graph(n)
 
@@ -94,7 +94,7 @@ else:
 # Color count
 if alg in ["Backtracking"]:
     k = st.sidebar.number_input(
-        "Colors", min_value=1, max_value=10, value=3, key="k", on_change=reset_step
+        "COLORS", min_value=1, max_value=10, value=3, key="k", on_change=reset_step
     )
 else:
     k = None
@@ -123,16 +123,16 @@ col1, col2 = st.columns([1, 1])
 with col1:
     col11, col12 = st.columns([1,1])
     with col11:
-        if st.button("Previous"):
+        if st.button("PREVIOUS"):
             st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
         st.metric("Step (current/total)", f"{st.session_state.step_idx + 1}/{max_steps}")
     with col12:
-        if st.button("Next"):
+        if st.button("NEXT"):
             st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
     st.write('---')
 
 with col2:
-    if st.button("Run All", type='primary'):
+    if st.button("RUN ALL", type='primary'):
         start = time.time()
         st.session_state.step_idx = max_steps - 1
         st.session_state.elapsed = time.time() - start
