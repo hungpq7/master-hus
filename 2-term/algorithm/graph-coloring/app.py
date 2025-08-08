@@ -2,6 +2,8 @@ import streamlit as st
 import networkx as nx
 import time
 
+st.set_page_config(layout="wide")
+
 def backtracking_steps(graph, k):
     n = graph.number_of_nodes()
     colors = [0] * n
@@ -135,24 +137,20 @@ elif graph_option == "Star Graph":
     G = nx.star_graph(n)
 
 elif graph_option in ["Erdos-Renyi", "Barabasi-Albert", "Watts-Strogatz"]:
-    # sidebar inputs for the three types
     if graph_option == "Erdos-Renyi":
         n = st.sidebar.number_input("n (nodes)", 1, 100, 10, key="er_n", on_change=reset_step)
         p = st.sidebar.slider("p (prob)", 0.0, 1.0, 0.3, key="er_p", on_change=reset_step)
         params = {"n": n, "p": p}
-
     elif graph_option == "Barabasi-Albert":
         n = st.sidebar.number_input("n (nodes)", 1, 100, 10, key="ba_n", on_change=reset_step)
         m = st.sidebar.number_input("m (links)", 1, n-1, 2, key="ba_m", on_change=reset_step)
         params = {"n": n, "m": m}
-
-    else:  # Watts-Strogatz
+    elif graph_option == "Watts-Strogatz":
         n = st.sidebar.number_input("n (nodes)", 1, 100, 10, key="ws_n", on_change=reset_step)
         k = st.sidebar.number_input("k (neigh)", 0, n-1, 4, key="ws_k", on_change=reset_step)
         p = st.sidebar.slider("p (rewire)", 0.0, 1.0, 0.1, key="ws_p", on_change=reset_step)
         params = {"n": n, "k": k, "p": p}
 
-    # regenerate only if type or params changed
     if (
         "rand_graph" not in st.session_state
         or st.session_state.rand_graph_option != graph_option
