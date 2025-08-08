@@ -8,7 +8,7 @@ def backtracking_steps(graph, k):
     n = graph.number_of_nodes()
     colors = [0] * n
     v = 0
-    interpretation_msgs = []
+    msgs = []
 
     while 0 <= v < n:
         colors[v] += 1
@@ -22,23 +22,23 @@ def backtracking_steps(graph, k):
         ):
             colors[v] += 1
 
+        # Ensure we are appending a valid node color and index
         if colors[v] <= k:
+            msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
             v += 1
             if v < n:
                 colors[v] = 0
         else:
+            msgs.append(f"Step {v+1}: Backtracked from node {v+1} (all colors conflicted)")
             colors[v] = 0
             v -= 1
 
-        interpretation_msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
-
-        yield colors.copy(), interpretation_msgs
-
+        yield colors.copy(), msgs
 
 def greedy_steps(graph):
     n = graph.number_of_nodes()
     colors = [0] * n
-    interpretation_msgs = []
+    msgs = []
 
     for v in graph.nodes():
         used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
@@ -46,9 +46,9 @@ def greedy_steps(graph):
         while c in used:
             c += 1
         colors[v] = c
-        interpretation_msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
+        msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
 
-        yield colors.copy(), interpretation_msgs
+        yield colors.copy(), msgs
 
 
 def welsh_powell_steps(graph):
@@ -56,7 +56,7 @@ def welsh_powell_steps(graph):
         graph.nodes(), key=lambda v: graph.degree(v), reverse=True
     )
     colors = [0] * graph.number_of_nodes()
-    interpretation_msgs = []
+    msgs = []
 
     for v in order:
         used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
@@ -64,9 +64,9 @@ def welsh_powell_steps(graph):
         while c in used:
             c += 1
         colors[v] = c
-        interpretation_msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
+        msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
 
-        yield colors.copy(), interpretation_msgs
+        yield colors.copy(), msgs
 
 
 def dsatur_steps(graph):
@@ -74,7 +74,7 @@ def dsatur_steps(graph):
     colors = [0] * n
     degrees = dict(graph.degree())
     uncolored = set(graph.nodes())
-    interpretation_msgs = []
+    msgs = []
 
     while uncolored:
         sat_degrees = {
@@ -95,9 +95,9 @@ def dsatur_steps(graph):
         colors[v] = c
         uncolored.remove(v)
 
-        interpretation_msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
+        msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
 
-        yield colors.copy(), interpretation_msgs
+        yield colors.copy(), msgs
 
 
 # Sidebar title and controls
@@ -239,7 +239,7 @@ with col2:
         st.session_state.elapsed = time.time() - start
     st.metric("Elapsed (seconds)", f"{st.session_state.elapsed:.6f}s")
 
-current_colors, interpretation_msgs = steps[st.session_state.step_idx]
+current_colors, msgs = steps[st.session_state.step_idx]
 
 def draw_graph(colors):
     dot = (
@@ -269,7 +269,7 @@ if "history" not in st.session_state:
     st.session_state.history = []
 
 # Add current message to history
-st.session_state.history.insert(0, interpretation_msgs[-1])
+st.session_state.history.insert(0, msgs[-1])
 
 # Display all previous messages, greyed out
 with col2:
