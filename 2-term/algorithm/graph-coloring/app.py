@@ -36,12 +36,12 @@ if graph_option == "Cycle":
         "NODES", min_value=1, max_value=20, value=5, key="complete_n", on_change=reset_step
     )
     G = nx.cycle_graph(n)
-elif graph_option == "Complete Graph":
+elif graph_option == "Complete":
     n = st.sidebar.number_input(
         "NODES", min_value=1, max_value=20, value=5, key="complete_n", on_change=reset_step
     )
     G = nx.complete_graph(n)
-elif graph_option == "Path Graph":
+elif graph_option == "Path":
     n = st.sidebar.number_input(
         "NODES", min_value=1, max_value=20, value=5, key="path_n", on_change=reset_step
     )
