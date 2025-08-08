@@ -4,6 +4,7 @@ import time
 
 from src.algorithm import backtracking_steps, greedy_steps
 from src.algorithm import welsh_powell_steps, dsatur_steps
+from src.plotting import draw_graph
 
 st.set_page_config(layout="wide")
 
@@ -127,11 +128,24 @@ if "step_idx" not in st.session_state:
 if "elapsed" not in st.session_state:
     st.session_state.elapsed = 0.0
 
-# In your step display logic, ensure you also show the explanation:
-current_colors, current_explanation = steps[st.session_state.step_idx]
+col1, col2 = st.columns([1, 1])
+with col1:
+    sub1, sub2, _ = st.columns([1,1,1])
+    with sub1:
+        if st.button("Previous"):
+            st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
+    with sub2:
+        if st.button("Next"):
+            st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
+    st.metric("Step (current/total)", f"{st.session_state.step_idx + 1}/{max_steps}")
+with col2:
+    if st.button("Run All", type='primary'):
+        start = time.time()
+        st.session_state.step_idx = max_steps - 1
+        st.session_state.elapsed = time.time() - start
+    st.metric("Elapsed (seconds)", f"{st.session_state.elapsed:.6f}s")
 
-def draw_graph(colors):
-    # graph visualization code here (unchanged)
+current_colors, current_explanation = steps[st.session_state.step_idx]
 
 with col1:
     draw_graph(current_colors)
