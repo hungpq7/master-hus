@@ -8,7 +8,6 @@ def backtracking_steps(graph, k):
     n = graph.number_of_nodes()
     colors = [0] * n
     v = 0
-    interpretation_msgs = []
 
     while 0 <= v < n:
         colors[v] += 1
@@ -30,15 +29,12 @@ def backtracking_steps(graph, k):
             colors[v] = 0
             v -= 1
 
-        interpretation_msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
-
-        yield colors.copy(), interpretation_msgs
+        yield colors.copy()
 
 
 def greedy_steps(graph):
     n = graph.number_of_nodes()
     colors = [0] * n
-    interpretation_msgs = []
 
     for v in graph.nodes():
         used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
@@ -46,9 +42,7 @@ def greedy_steps(graph):
         while c in used:
             c += 1
         colors[v] = c
-        interpretation_msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
-
-        yield colors.copy(), interpretation_msgs
+        yield colors.copy()
 
 
 def welsh_powell_steps(graph):
@@ -56,7 +50,6 @@ def welsh_powell_steps(graph):
         graph.nodes(), key=lambda v: graph.degree(v), reverse=True
     )
     colors = [0] * graph.number_of_nodes()
-    interpretation_msgs = []
 
     for v in order:
         used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
@@ -64,9 +57,7 @@ def welsh_powell_steps(graph):
         while c in used:
             c += 1
         colors[v] = c
-        interpretation_msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
-
-        yield colors.copy(), interpretation_msgs
+        yield colors.copy()
 
 
 def dsatur_steps(graph):
@@ -74,7 +65,6 @@ def dsatur_steps(graph):
     colors = [0] * n
     degrees = dict(graph.degree())
     uncolored = set(graph.nodes())
-    interpretation_msgs = []
 
     while uncolored:
         sat_degrees = {
@@ -94,10 +84,7 @@ def dsatur_steps(graph):
 
         colors[v] = c
         uncolored.remove(v)
-
-        interpretation_msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
-
-        yield colors.copy(), interpretation_msgs
+        yield colors.copy()
 
 
 # Sidebar title and controls
@@ -224,7 +211,7 @@ if "elapsed" not in st.session_state:
 
 col1, col2 = st.columns([1, 1])
 with col1:
-    sub1, sub2, _ = st.columns([1, 1, 1])
+    sub1, sub2, _ = st.columns([1,1,1])
     with sub1:
         if st.button("Previous"):
             st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
@@ -239,7 +226,7 @@ with col2:
         st.session_state.elapsed = time.time() - start
     st.metric("Elapsed (seconds)", f"{st.session_state.elapsed:.6f}s")
 
-current_colors, interpretation_msgs = steps[st.session_state.step_idx]
+current_colors = steps[st.session_state.step_idx]
 
 def draw_graph(colors):
     dot = (
@@ -264,25 +251,68 @@ def draw_graph(colors):
     dot += "}"
     st.graphviz_chart(dot)
 
-# New interpretation history logic
-if "history" not in st.session_state:
-    st.session_state.history = []
+def interpret_step(alg, step_idx, steps, graph, k=None):
+    """Generate explanation for the current step."""
+    colors = steps[step_idx]
+    explanation = ""
 
-# Add current message to history
-st.session_state.history.insert(0, interpretation_msgs[-1])
+    if alg == "Backtracking":
+        v = step_idx % graph.number_of_nodes()  # rough mapping for narration
+        c = colors[v]
 
-# Display all previous messages, greyed out
-with col2:
-    st.write("### Interpretation")
-    for idx, msg in enumerate(st.session_state.history):
-        if idx == 0:
-            st.markdown(f"<div style='color: black; font-weight: bold;'>{msg}</div>", unsafe_allow_html=True)
+        if c == 0:
+            explanation += f"Step {step_idx+1}: Backtracked from node {v+1} because all {k} colors caused a conflict with neighbors.\n"
+            explanation += "→ Go back to the previous node to try a different color."
         else:
-            st.markdown(f"<div style='color: grey;'>{msg}</div>", unsafe_allow_html=True)
+            explanation += f"Step {step_idx+1}: Assigned color {c} to node {v+1}.\n"
+            # Check conflict condition
+            conflict = any(colors[v] == colors[u] for u in graph.neighbors(v) if colors[u] != 0)
+            if conflict:
+                explanation += f"→ Conflict detected: a neighbor already has color {c}, so we try the next color."
+            else:
+                explanation += "→ No conflict with neighbors, move to the next node."
 
-    # Keep history to a reasonable length
-    if len(st.session_state.history) > 10:
-        st.session_state.history = st.session_state.history[:10]
+    elif alg == "Greedy":
+        v = step_idx
+        c = colors[v]
+        used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
+        explanation += f"Step {step_idx+1}: Choosing the smallest available color for node {v+1}.\n"
+        explanation += f"→ Neighbor colors in use: {used}.\n"
+        explanation += f"→ Assigned color {c} and moved to the next node."
+
+    elif alg == "Welsh-Powell":
+        order = sorted(graph.nodes(), key=lambda v: graph.degree(v), reverse=True)
+        v = order[step_idx]
+        c = colors[v]
+        used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
+        explanation += f"Step {step_idx+1}: Following Welsh-Powell order (by degree), coloring node {v+1}.\n"
+        explanation += f"→ Neighbor colors in use: {used}.\n"
+        explanation += f"→ Assigned color {c}."
+
+    elif alg == "DSATUR":
+        # Find the node colored at this step
+        prev_colors = steps[step_idx - 1] if step_idx > 0 else [0] * graph.number_of_nodes()
+        changed_nodes = [i for i in range(len(colors)) if prev_colors[i] != colors[i]]
+        v = changed_nodes[0] if changed_nodes else None
+        c = colors[v] if v is not None else None
+
+        uncolored = {i for i in range(graph.number_of_nodes()) if colors[i] == 0}
+        sat_degrees = {
+            x: len({colors[u] for u in graph.neighbors(x) if colors[u] != 0})
+            for x in uncolored
+        }
+
+        explanation += f"Step {step_idx+1}: Selected the uncolored node with highest saturation degree."
+        if v is not None:
+            explanation += f"\n→ Node {v+1} chosen (saturation: {sat_degrees.get(v, 0)})."
+            explanation += f"\n→ Assigned smallest available color: {c}."
+
+    return explanation
 
 with col1:
     draw_graph(current_colors)
+    
+with col2:
+    st.write("### Interpretation")
+    step_explanation = interpret_step(alg, st.session_state.step_idx, steps, G, k)
+    st.write(step_explanation)
