@@ -219,7 +219,10 @@ with col1:
     st.metric("Step", f"{st.session_state.step_idx + 1}/{max_steps}")
 with col2:
     if st.button("Run All", type='primary'):
+        start = time.time()
         st.session_state.step_idx = max_steps - 1
+        elapsed = time.time() - start
+        st.metric("Elapsed", f"{elapsed}s")
 
 current_colors = steps[st.session_state.step_idx]
 
@@ -249,5 +252,5 @@ def draw_graph(colors):
 with col1:
     draw_graph(current_colors)
 with col2:
-    st.write("## Interpretation")
+    st.write("### Interpretation")
     st.write(f"Node color assignments (1-based indices): {current_colors}")
