@@ -33,7 +33,7 @@ def backtracking_steps(graph, k):
             v -= 1
         
         if v < 0:
-            explanation.append("\n:red-badge[:material/cross: Failed]")
+            explanation.append("\n:red-badge[:material/close: Failure]")
         elif v == n:
             explanation.append("\n:green-badge[:material/check: Success]")
 
