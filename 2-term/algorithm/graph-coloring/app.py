@@ -224,7 +224,7 @@ with col2:
         start = time.time()
         st.session_state.step_idx = max_steps - 1
         st.session_state.elapsed = time.time() - start
-    st.metric("Elapsed", f"{st.session_state.elapsed:.6s}s")
+    st.metric("Elapsed", f"{st.session_state.elapsed:.6}s")
 
 current_colors = steps[st.session_state.step_idx]
 
