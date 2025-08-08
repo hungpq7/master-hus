@@ -245,5 +245,8 @@ def draw_graph(colors):
     st.graphviz_chart(dot)
 
 current_colors = steps[st.session_state.step_idx]
-draw_graph(current_colors)
-st.write(f"Node color assignments (1-based indices): {current_colors}")
+
+with col1:
+    draw_graph(current_colors)
+with col2:
+    st.write(f"Node color assignments (1-based indices): {current_colors}")
