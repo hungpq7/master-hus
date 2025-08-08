@@ -33,7 +33,7 @@ def backtracking_steps(graph, k):
             v -= 1
         
         if v < 0:
-            explanation.append("- No solution found: backtracked to the first node.")
+            explanation.append(":green-badge[:material/check: Success]")
         elif v == n:
             explanation.append("- Solution found: all nodes successfully colored.")
 
