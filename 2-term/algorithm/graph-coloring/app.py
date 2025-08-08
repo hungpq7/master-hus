@@ -20,7 +20,6 @@ st.sidebar.selectbox(
 st.sidebar.selectbox(
     "Graph",
     [
-        "4-cycle",
         "Complete Graph",
         "Path Graph",
         "Star Graph",
@@ -37,9 +36,7 @@ alg = st.session_state.get("alg", "Backtracking")
 graph_option = st.session_state.get("graph_option", "4-cycle")
 
 # Build graph
-if graph_option == "4-cycle":
-    G = nx.cycle_graph(4)
-elif graph_option == "Complete Graph":
+if graph_option == "Complete Graph":
     n = st.sidebar.number_input(
         "Number of nodes", min_value=1, max_value=20, value=5, key="complete_n", on_change=reset_step
     )
@@ -104,7 +101,6 @@ if alg in ["Backtracking"]:
     k = st.sidebar.number_input(
         "Colors", min_value=1, max_value=10, value=3, key="k", on_change=reset_step
     )
-    st.sidebar.write(f"Number of colors: {k}")
 else:
     k = None
 
