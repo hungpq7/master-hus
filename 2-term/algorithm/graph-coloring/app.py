@@ -4,7 +4,6 @@ import time
 
 from src.algorithm import backtracking_steps, greedy_steps
 from src.algorithm import welsh_powell_steps, dsatur_steps
-from src.plotting import draw_graph
 
 st.set_page_config(layout="wide")
 
@@ -146,6 +145,29 @@ with col2:
     st.metric("Elapsed (seconds)", f"{st.session_state.elapsed:.6f}s")
 
 current_colors, current_explanation = steps[st.session_state.step_idx]
+
+def draw_graph(colors):
+    dot = (
+        "graph G {\n"
+        "  graph [splines=true, overlap=false, sep=1.0, ranksep=1.0, nodesep=1.0, layout=neato];\n"
+    )
+    palette = [
+        "#FFFFFF", "#E24A33", "#348ABD", "#988ED5", "#777777",
+        "#FBC15E", "#8EBA42", "#FFB5B8", "#B15E81", "#7F7F7F",
+    ]
+    dot += (
+        "  node [shape=circle, style=filled, color=\"#333333\", "
+        "fontcolor=\"#000000\", fontsize=14, width=0.5, height=0.5];\n"
+    )
+    dot += "  edge [color=\"#444444\", penwidth=2];\n"
+    for idx, c in enumerate(colors):
+        node_id = idx + 1
+        fill = palette[c] if c < len(palette) else palette[0]
+        dot += f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\"];\n"
+    for u, v in G.edges():
+        dot += f"  {u+1} -- {v+1};\n"
+    dot += "}"
+    st.graphviz_chart(dot)
 
 with col1:
     draw_graph(current_colors)
