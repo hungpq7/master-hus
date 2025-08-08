@@ -136,7 +136,7 @@ with col1:
         if st.button("Next"):
             st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
         # st.metric("Colors used", len(set(current_colors)))
-        st.metric("Colors used", current_colors)
+        st.metric("Colors used", set(current_colors))
     st.write('---')
 
 with col2:
