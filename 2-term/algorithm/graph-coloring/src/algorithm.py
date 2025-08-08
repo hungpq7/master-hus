@@ -16,21 +16,29 @@ def backtracking_steps(graph, k):
         ):
             colors[v] += 1
 
-        explanation = f"Step {step_idx}: Trying to assign a color to node {v+1}.\n"
+        explanation = list()
+        explanation.append(f"Step {step_idx}: Trying to assign a color to node {v+1}.")
+        # explanation = f"Step {step_idx}: Trying to assign a color to node {v+1}.\n"
         
         if colors[v] <= k:
-            explanation += f"- Assigned color {colors[v]} to node {v+1}.\n"
-            explanation += "- No conflict detected, move to the next node."
+            explanation.append(f"- Assigned color {colors[v]} to node {v+1}.")
+            explanation.append("- No conflict detected, move to the next node.")
             v += 1
             if v < n:
                 colors[v] = 0
         else:
-            explanation += f"- Backtracking: no valid color found for node {v+1}.\n"
-            explanation += "- Going back to the previous node to try a different color."
+            explanation.append("- Backtracking: no valid color found for node {v+1}.")
+            explanation.append("- Going back to the previous node to try a different color.")
             colors[v] = 0
             v -= 1
+        
+        if v < 0:
+            explanation.append("- No solution found: backtracked to the first node.")
+        elif v == n:
+            explanation.append("- Solution found: all nodes successfully colored.")
 
         step_idx += 1
+        explanation = "\n".join(explanation)
         yield colors.copy(), explanation
 
 
