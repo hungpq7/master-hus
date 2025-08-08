@@ -249,4 +249,5 @@ current_colors = steps[st.session_state.step_idx]
 with col1:
     draw_graph(current_colors)
 with col2:
+    st.write("## Interpretation")
     st.write(f"Node color assignments (1-based indices): {current_colors}")
