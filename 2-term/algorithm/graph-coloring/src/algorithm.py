@@ -39,7 +39,7 @@ def backtracking_steps(graph, k):
     v = 0
     step_idx = 1
 
-    while 0 <= v < n:
+    while True:
         # Try to assign a color to the current node
         colors[v] += 1
         while (
@@ -57,25 +57,22 @@ def backtracking_steps(graph, k):
         if colors[v] <= k:
             explanation += f"- Assigned color {colors[v]} to node {v+1}.\n"
             explanation += "- No conflict detected, move to the next node."
+            step_idx += 1
             v += 1
-            if v < n:
-                colors[v] = 0  # Reset the next node color for the next iteration
+            if v == n:  # All nodes successfully colored
+                explanation += "\n- Solution found: all nodes successfully colored."
+                break
         else:
             explanation += f"- Backtracking: no valid color found for node {v+1}.\n"
             explanation += "- Going back to the previous node to try a different color."
             colors[v] = 0
             v -= 1
+            if v < 0:  # No solution found, backtracked to the first node
+                explanation += "\n- No solution found: backtracked to the first node, unable to assign valid colors."
+                break
 
-        # Check if the solution is finished
-        if v < 0:
-            explanation += "\n- No solution found: backtracked to the first node, unable to assign valid colors."
-            break
-        elif v == n:  # All nodes successfully colored
-            explanation += "\n- Solution found: all nodes successfully colored."
-            break
-
-        step_idx += 1
         yield colors.copy(), explanation  # yield both color and explanation
+
 
 
 def greedy_steps(graph):
