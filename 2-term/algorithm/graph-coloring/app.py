@@ -20,12 +20,8 @@ st.sidebar.selectbox(
 st.sidebar.selectbox(
     "Graph",
     [
-        "Complete Graph",
-        "Path Graph",
-        "Star Graph",
-        "Erdos-Renyi",
-        "Barabasi-Albert",
-        "Watts-Strogatz",
+        "Cycle", "Complete", "Path",
+        "Erdos-Renyi", "Barabasi-Albert", "Watts-Strogatz",
         "Custom",
     ],
     key="graph_option",
@@ -33,10 +29,14 @@ st.sidebar.selectbox(
 )
 
 alg = st.session_state.get("alg", "Backtracking")
-graph_option = st.session_state.get("graph_option", "4-cycle")
+graph_option = st.session_state.get("graph_option", "Cycle")
 
-# Build graph
-if graph_option == "Complete Graph":
+if graph_option == "Cycle":
+    n = st.sidebar.number_input(
+        "Number of nodes", min_value=1, max_value=20, value=5, key="complete_n", on_change=reset_step
+    )
+    G = nx.cycle_graph(n)
+elif graph_option == "Complete Graph":
     n = st.sidebar.number_input(
         "Number of nodes", min_value=1, max_value=20, value=5, key="complete_n", on_change=reset_step
     )
@@ -46,11 +46,6 @@ elif graph_option == "Path Graph":
         "Number of nodes", min_value=1, max_value=20, value=5, key="path_n", on_change=reset_step
     )
     G = nx.path_graph(n)
-elif graph_option == "Star Graph":
-    n = st.sidebar.number_input(
-        "Number of leaves", min_value=1, max_value=20, value=4, key="star_n", on_change=reset_step
-    )
-    G = nx.star_graph(n)
 
 elif graph_option in ["Erdos-Renyi", "Barabasi-Albert", "Watts-Strogatz"]:
     if graph_option == "Erdos-Renyi":
