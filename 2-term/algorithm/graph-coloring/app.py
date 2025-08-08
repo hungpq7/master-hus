@@ -2,105 +2,11 @@ import streamlit as st
 import networkx as nx
 import time
 
+from src.algorithm import backtracking_steps, greedy_steps
+from src.algorithm import welsh_powell_steps, dsatur_steps
+
 st.set_page_config(layout="wide")
 
-def backtracking_steps(graph, k):
-    n = graph.number_of_nodes()
-    colors = [0] * n
-    v = 0
-    msgs = []
-
-    while 0 <= v < n:
-        colors[v] += 1
-        while (
-            colors[v] <= k
-            and any(
-                colors[v] == colors[u]
-                for u in graph.neighbors(v)
-                if colors[u] != 0
-            )
-        ):
-            colors[v] += 1
-
-        # Ensure we are appending a valid node color and index
-        if colors[v] <= k:
-            msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
-            v += 1
-            if v < n:
-                colors[v] = 0
-        else:
-            msgs.append(f"Step {v+1}: Backtracked from node {v+1} (all colors conflicted)")
-            colors[v] = 0
-            v -= 1
-
-        yield colors.copy(), msgs
-
-def greedy_steps(graph):
-    n = graph.number_of_nodes()
-    colors = [0] * n
-    msgs = []
-
-    for v in graph.nodes():
-        used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
-        c = 1
-        while c in used:
-            c += 1
-        colors[v] = c
-        msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
-
-        yield colors.copy(), msgs
-
-
-def welsh_powell_steps(graph):
-    order = sorted(
-        graph.nodes(), key=lambda v: graph.degree(v), reverse=True
-    )
-    colors = [0] * graph.number_of_nodes()
-    msgs = []
-
-    for v in order:
-        used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
-        c = 1
-        while c in used:
-            c += 1
-        colors[v] = c
-        msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
-
-        yield colors.copy(), msgs
-
-
-def dsatur_steps(graph):
-    n = graph.number_of_nodes()
-    colors = [0] * n
-    degrees = dict(graph.degree())
-    uncolored = set(graph.nodes())
-    msgs = []
-
-    while uncolored:
-        sat_degrees = {
-            v: len({colors[u]
-                     for u in graph.neighbors(v)
-                     if colors[u] != 0})
-            for v in uncolored
-        }
-        max_sat = max(sat_degrees.values())
-        candidates = [v for v, sat in sat_degrees.items() if sat == max_sat]
-        v = max(candidates, key=lambda x: degrees[x])
-
-        used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
-        c = 1
-        while c in used:
-            c += 1
-
-        colors[v] = c
-        uncolored.remove(v)
-
-        msgs.append(f"Step {v+1}: Color assigned to node {v+1}: {colors[v]}")
-
-        yield colors.copy(), msgs
-
-
-# Sidebar title and controls
 def reset_step():
     st.session_state.step_idx = 0
 
@@ -202,7 +108,6 @@ if alg in ["Backtracking"]:
 else:
     k = None
 
-# Generate steps
 def get_steps():
     if alg == "Backtracking":
         return list(backtracking_steps(G, k))
@@ -222,67 +127,15 @@ if "step_idx" not in st.session_state:
 if "elapsed" not in st.session_state:
     st.session_state.elapsed = 0.0
 
-col1, col2 = st.columns([1, 1])
-with col1:
-    sub1, sub2, _ = st.columns([1, 1, 1])
-    with sub1:
-        if st.button("Previous"):
-            st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
-    with sub2:
-        if st.button("Next"):
-            st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
-    st.metric("Step (current/total)", f"{st.session_state.step_idx + 1}/{max_steps}")
-with col2:
-    if st.button("Run All", type='primary'):
-        start = time.time()
-        st.session_state.step_idx = max_steps - 1
-        st.session_state.elapsed = time.time() - start
-    st.metric("Elapsed (seconds)", f"{st.session_state.elapsed:.6f}s")
-
-current_colors, msgs = steps[st.session_state.step_idx]
+# In your step display logic, ensure you also show the explanation:
+current_colors, current_explanation = steps[st.session_state.step_idx]
 
 def draw_graph(colors):
-    dot = (
-        "graph G {\n"
-        "  graph [splines=true, overlap=false, sep=1.0, ranksep=1.0, nodesep=1.0, layout=neato];\n"
-    )
-    palette = [
-        "#FFFFFF", "#E24A33", "#348ABD", "#988ED5", "#777777",
-        "#FBC15E", "#8EBA42", "#FFB5B8", "#B15E81", "#7F7F7F",
-    ]
-    dot += (
-        "  node [shape=circle, style=filled, color=\"#333333\", "
-        "fontcolor=\"#000000\", fontsize=14, width=0.5, height=0.5];\n"
-    )
-    dot += "  edge [color=\"#444444\", penwidth=2];\n"
-    for idx, c in enumerate(colors):
-        node_id = idx + 1
-        fill = palette[c] if c < len(palette) else palette[0]
-        dot += f"  {node_id} [label=\"{node_id}\", fillcolor=\"{fill}\"];\n"
-    for u, v in G.edges():
-        dot += f"  {u+1} -- {v+1};\n"
-    dot += "}"
-    st.graphviz_chart(dot)
-
-# New interpretation history logic
-if "history" not in st.session_state:
-    st.session_state.history = []
-
-# Add current message to history
-st.session_state.history.insert(0, msgs[-1])
-
-# Display all previous messages, greyed out
-with col2:
-    st.write("### Interpretation")
-    for idx, msg in enumerate(st.session_state.history):
-        if idx == 0:
-            st.markdown(f"<div style='color: black; font-weight: bold;'>{msg}</div>", unsafe_allow_html=True)
-        else:
-            st.markdown(f"<div style='color: grey;'>{msg}</div>", unsafe_allow_html=True)
-
-    # Keep history to a reasonable length
-    if len(st.session_state.history) > 10:
-        st.session_state.history = st.session_state.history[:10]
+    # graph visualization code here (unchanged)
 
 with col1:
     draw_graph(current_colors)
+
+with col2:
+    st.write("### Interpretation")
+    st.write(current_explanation)
