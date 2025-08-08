@@ -123,16 +123,19 @@ if "step_idx" not in st.session_state:
 if "elapsed" not in st.session_state:
     st.session_state.elapsed = 0.0
 
+current_colors, current_explanation = steps[st.session_state.step_idx]
+
 col1, col2 = st.columns([1, 1])
 with col1:
-    sub1, sub2, _ = st.columns([1,1,1])
+    sub1, sub2 = st.columns([1,1])
     with sub1:
         if st.button("Previous"):
             st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
+        st.metric("Step (current/total)", f"{st.session_state.step_idx + 1}/{max_steps}")
     with sub2:
         if st.button("Next"):
             st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
-    st.metric("Step (current/total)", f"{st.session_state.step_idx + 1}/{max_steps}")
+        st.metric("Colors Used (Current Step)", len(set(current_colors)))
     st.write('---')
 
 with col2:
@@ -144,7 +147,6 @@ with col2:
     st.write('---')
 
 
-current_colors, current_explanation = steps[st.session_state.step_idx]
 
 def draw_graph(colors):
     dot = (
