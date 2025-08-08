@@ -173,4 +173,4 @@ with col1:
 
 with col2:
     st.write("### Interpretation")
-    st.write(current_explanation)
+    st.markdown(current_explanation)
