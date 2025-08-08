@@ -206,6 +206,8 @@ max_steps = len(steps)
 # Initialize session state
 if "step_idx" not in st.session_state:
     st.session_state.step_idx = 0
+if "elapsed" not in st.session_state:
+    st.session_state.elapsed = 0.0
 
 col1, col2 = st.columns([1, 1])
 with col1:
@@ -221,8 +223,8 @@ with col2:
     if st.button("Run All", type='primary'):
         start = time.time()
         st.session_state.step_idx = max_steps - 1
-        elapsed = time.time() - start
-        st.metric("Elapsed", f"{elapsed}s")
+        st.session_state.elapsed = time.time() - start
+    st.metric("Elapsed", f"{st.session_state.elapsed:.6s}s")
 
 current_colors = steps[st.session_state.step_idx]
 
