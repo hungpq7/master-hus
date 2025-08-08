@@ -19,19 +19,20 @@ def backtracking_steps(graph, k):
         explanation = f"Step {step_idx}: Trying to assign a color to node {v+1}.\n"
         
         if colors[v] <= k:
-            explanation += f"→ Assigned color {colors[v]} to node {v+1}.\n"
-            explanation += "→ No conflict detected, move to the next node."
+            explanation += f"- Assigned color {colors[v]} to node {v+1}.\n"
+            explanation += "- No conflict detected, move to the next node."
             v += 1
             if v < n:
                 colors[v] = 0
         else:
-            explanation += f"→ Backtracking: no valid color found for node {v+1}.\n"
-            explanation += "→ Going back to the previous node to try a different color."
+            explanation += f"- Backtracking: no valid color found for node {v+1}.\n"
+            explanation += "- Going back to the previous node to try a different color."
             colors[v] = 0
             v -= 1
 
         step_idx += 1
         yield colors.copy(), explanation  # yield both color and explanation
+
 
 def greedy_steps(graph):
     n = graph.number_of_nodes()
@@ -45,10 +46,11 @@ def greedy_steps(graph):
             c += 1
         colors[v] = c
         explanation = f"Step {step_idx}: Greedy choice for node {v+1}.\n"
-        explanation += f"→ Neighbor colors in use: {used}.\n"
-        explanation += f"→ Assigned color {c} to node {v+1}.\n"
+        explanation += f"- Neighbor colors in use: {used}.\n"
+        explanation += f"- Assigned color {c} to node {v+1}.\n"
         step_idx += 1
         yield colors.copy(), explanation
+
 
 def welsh_powell_steps(graph):
     order = sorted(
@@ -64,10 +66,11 @@ def welsh_powell_steps(graph):
             c += 1
         colors[v] = c
         explanation = f"Step {step_idx}: Welsh-Powell (degree-based) choice for node {v+1}.\n"
-        explanation += f"→ Neighbor colors in use: {used}.\n"
-        explanation += f"→ Assigned color {c}.\n"
+        explanation += f"- Neighbor colors in use: {used}.\n"
+        explanation += f"- Assigned color {c}.\n"
         step_idx += 1
         yield colors.copy(), explanation
+
 
 def dsatur_steps(graph):
     n = graph.number_of_nodes()
@@ -95,7 +98,7 @@ def dsatur_steps(graph):
         colors[v] = c
         uncolored.remove(v)
         explanation = f"Step {step_idx}: DSATUR choice for node {v+1}.\n"
-        explanation += f"→ Saturation degrees: {sat_degrees}.\n"
-        explanation += f"→ Assigned color {c}.\n"
+        explanation += f"- Saturation degrees: {sat_degrees}.\n"
+        explanation += f"- Assigned color {c}.\n"
         step_idx += 1
         yield colors.copy(), explanation
