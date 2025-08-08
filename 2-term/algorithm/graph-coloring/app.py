@@ -141,8 +141,8 @@ with col2:
 
 current_colors, current_explanation = steps[st.session_state.step_idx]
 with col12:
-    st.metric("Colors used", len(set(current_colors))-1)
-    st.write(current_colors)
+    set_colors = set(c for c in current_colors.values() if c > 0)
+    st.metric("Colors used", len(set_colors))
 
 
 def draw_graph(colors):
