@@ -137,14 +137,16 @@ with col1:
         if st.button("Next"):
             st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
     st.metric("Step (current/total)", f"{st.session_state.step_idx + 1}/{max_steps}")
+    st.write('---')
+
 with col2:
     if st.button("Run All", type='primary'):
         start = time.time()
         st.session_state.step_idx = max_steps - 1
         st.session_state.elapsed = time.time() - start
     st.metric("Elapsed (seconds)", f"{st.session_state.elapsed:.6f}s")
+    st.write('---')
 
-st.write('---')
 
 current_colors, current_explanation = steps[st.session_state.step_idx]
 
