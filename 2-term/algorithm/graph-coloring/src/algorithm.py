@@ -27,7 +27,7 @@ def backtracking_steps(graph, k):
             if v < n:
                 colors[v] = 0
         else:
-            explanation.append("- Backtracking: no valid color found for node {v+1}.")
+            explanation.append(f"- Backtracking: no valid color found for node {v+1}.")
             explanation.append("- Going back to the previous node to try a different color.")
             colors[v] = 0
             v -= 1
