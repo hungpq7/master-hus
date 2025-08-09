@@ -53,15 +53,14 @@ def greedy_steps(graph):
         msgs.append(f"Step {step_idx}: Greedy choice for node {v+1}.")
         msgs.append(f"- Neighbor colors in use: {used}.")
         msgs.append(f"- Assigned color {c} to node {v+1}.")
-        if v == n: msgs.append("\n:green-badge[:material/check: Success]")
+        if idx == n - 1: msgs.append("\n:green-badge[:material/check: Success]")
         step_idx += 1
         yield colors.copy(), msgs
 
 
 def welsh_powell_steps(graph):
-    order = sorted(
-        graph.nodes(), key=lambda v: graph.degree(v), reverse=True
-    )
+    n = graph.number_of_nodes()
+    order = sorted(graph.nodes(), key=lambda v: graph.degree(v), reverse=True)
     colors = [0] * graph.number_of_nodes()
     step_idx = 1
 
@@ -74,7 +73,7 @@ def welsh_powell_steps(graph):
         msgs = [f"Step {step_idx}: Welsh-Powell (degree-based) choice for node {v+1}."]
         msgs.append(f"- Neighbor colors in use: {used}.")
         msgs.append(f"- Assigned color {c}.")
-        if v == n: msgs.append("\n:green-badge[:material/check: Success]")
+        if idx == n - 1: msgs.append("\n:green-badge[:material/check: Success]")
         step_idx += 1
         yield colors.copy(), msgs
 
