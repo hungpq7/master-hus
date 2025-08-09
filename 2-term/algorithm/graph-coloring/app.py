@@ -125,7 +125,7 @@ with col1:
     with col11:
         if st.button("PREVIOUS"):
             st.session_state.step_idx = max(st.session_state.step_idx - 1, 0)
-        st.metric("Step (current/total)", f"{st.session_state.step_idx + 1}/{max_steps}")
+        st.metric("STEP (current/total)", f"{st.session_state.step_idx + 1}/{max_steps}")
     with col12:
         if st.button("NEXT"):
             st.session_state.step_idx = min(st.session_state.step_idx + 1, max_steps - 1)
@@ -136,13 +136,13 @@ with col2:
         start = time.time()
         st.session_state.step_idx = max_steps - 1
         st.session_state.elapsed = time.time() - start
-    st.metric("Elapsed (seconds)", f"{st.session_state.elapsed:.6f}s")
+    st.metric("ELAPSED (seconds)", f"{st.session_state.elapsed:.6f}s")
     st.write('---')
 
 current_colors, current_explanation = steps[st.session_state.step_idx]
 with col12:
     set_colors = set([c for c in current_colors if c > 0])
-    st.metric("Colors used", len(set_colors))
+    st.metric("COLORS USED", len(set_colors))
 
 
 def draw_graph(colors):
