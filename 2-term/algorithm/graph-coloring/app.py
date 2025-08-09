@@ -12,7 +12,7 @@ def reset_step():
 
 st.sidebar.title("GRAPH COLORING")
 st.sidebar.radio(
-    "ALGORITHM",
+    ":rainbow[ALGORITHM]",
     ["Backtracking", "Greedy", "Welsh-Powell", "DSATUR"],
     key="alg",
     on_change=reset_step,
