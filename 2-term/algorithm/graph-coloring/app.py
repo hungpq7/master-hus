@@ -11,7 +11,7 @@ def reset_step():
     st.session_state.step_idx = 0
 
 st.sidebar.title("GRAPH COLORING")
-st.sidebar.selectbox(
+st.sidebar.radio(
     "ALGORITHM",
     ["Backtracking", "Greedy", "Welsh-Powell", "DSATUR"],
     key="alg",
