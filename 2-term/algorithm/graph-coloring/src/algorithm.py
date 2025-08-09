@@ -106,6 +106,6 @@ def dsatur_steps(graph):
         msgs = [f"Step {step_idx}: DSATUR choice for node {v+1}."]
         msgs.append(f"- Saturation degrees: {sat_degrees}.")
         msgs.append(f"- Assigned color {c}.")
-        # if v == n: msgs.append("\n:green-badge[:material/check: Success]")
+        if not uncolored: msgs.append("\n:green-badge[:material/check: Success]")
         step_idx += 1
         yield colors.copy(), msgs

@@ -174,4 +174,4 @@ with col1:
 with col2:
     st.write("### Interpretation")
     explanation = "\n".join(current_msgs)
-    st.markdown(explanation)
+    st.markdown(current_msgs)
