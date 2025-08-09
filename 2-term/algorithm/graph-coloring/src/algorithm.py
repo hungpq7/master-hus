@@ -43,7 +43,8 @@ def greedy_steps(graph):
     colors = [0] * n
     step_idx = 1
 
-    for v in graph.nodes():
+    nodes_list = list(graph.nodes())
+    for idx, v in enumerate(nodes_list):
         used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
         c = 1
         while c in used:
@@ -64,7 +65,7 @@ def welsh_powell_steps(graph):
     colors = [0] * graph.number_of_nodes()
     step_idx = 1
 
-    for v in order:
+    for idx, v in enumerate(order):
         used = {colors[u] for u in graph.neighbors(v) if colors[u] != 0}
         c = 1
         while c in used:
