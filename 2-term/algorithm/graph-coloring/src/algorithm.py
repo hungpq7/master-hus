@@ -89,9 +89,7 @@ def dsatur_steps(graph):
 
     while uncolored:
         sat_degrees = {
-            v: len({colors[u]
-                     for u in graph.neighbors(v)
-                     if colors[u] != 0})
+            v: len({colors[u] for u in graph.neighbors(v) if colors[u] != 0})
             for v in uncolored
         }
         max_sat = max(sat_degrees.values())
