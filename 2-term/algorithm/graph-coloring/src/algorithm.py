@@ -35,7 +35,6 @@ def backtracking_steps(graph, k):
         elif v == n: msgs.append("\n:green-badge[:material/check: Success]")
 
         step_idx += 1
-        msgs = "\n".join(msgs)
         yield colors.copy(), msgs
 
 
