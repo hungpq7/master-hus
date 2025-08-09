@@ -139,7 +139,7 @@ with col2:
     st.metric("ELAPSED (seconds)", f"{st.session_state.elapsed:.6f}s")
     st.write('---')
 
-current_colors, current_explanation = steps[st.session_state.step_idx]
+current_colors, current_msgs = steps[st.session_state.step_idx]
 with col12:
     set_colors = set([c for c in current_colors if c > 0])
     st.metric("COLORS USED", len(set_colors))
@@ -173,4 +173,5 @@ with col1:
 
 with col2:
     st.write("### Interpretation")
-    st.markdown(current_explanation)
+    explanation = "\n".join(current_msgs)
+    st.markdown(current_msgs)

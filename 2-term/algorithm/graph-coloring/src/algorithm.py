@@ -16,30 +16,27 @@ def backtracking_steps(graph, k):
         ):
             colors[v] += 1
 
-        explanation = list()
-        explanation.append(f"Step {step_idx}: Trying to assign a color to node {v+1}.")
-        # explanation = f"Step {step_idx}: Trying to assign a color to node {v+1}.\n"
+        msgs = list()
+        msgs.append(f"Step {step_idx}: Trying to assign a color to node {v+1}.")
         
         if colors[v] <= k:
-            explanation.append(f"- Assigned color {colors[v]} to node {v+1}.")
-            explanation.append("- No conflict detected, move to the next node.")
+            msgs.append(f"- Assigned color {colors[v]} to node {v+1}.")
+            msgs.append("- No conflict detected, move to the next node.")
             v += 1
             if v < n:
                 colors[v] = 0
         else:
-            explanation.append(f"- Backtracking: no valid color found for node {v+1}.")
-            explanation.append("- Going back to the previous node to try a different color.")
+            msgs.append(f"- Backtracking: no valid color found for node {v+1}.")
+            msgs.append("- Going back to the previous node to try a different color.")
             colors[v] = 0
             v -= 1
         
-        if v < 0:
-            explanation.append("\n:red-badge[:material/close: Failure]")
-        elif v == n:
-            explanation.append("\n:green-badge[:material/check: Success]")
+        if v < 0: msgs.append("\n:red-badge[:material/close: Failure]")
+        elif v == n: msgs.append("\n:green-badge[:material/check: Success]")
 
         step_idx += 1
-        explanation = "\n".join(explanation)
-        yield colors.copy(), explanation
+        msgs = "\n".join(msgs)
+        yield colors.copy(), msgs
 
 
 def greedy_steps(graph):
@@ -53,11 +50,13 @@ def greedy_steps(graph):
         while c in used:
             c += 1
         colors[v] = c
-        explanation = f"Step {step_idx}: Greedy choice for node {v+1}.\n"
-        explanation += f"- Neighbor colors in use: {used}.\n"
-        explanation += f"- Assigned color {c} to node {v+1}.\n"
+        msgs = list()
+        msgs.append(f"Step {step_idx}: Greedy choice for node {v+1}.")
+        msgs.append(f"- Neighbor colors in use: {used}.")
+        msgs.append(f"- Assigned color {c} to node {v+1}.")
+        if v == n: msgs.append("\n:green-badge[:material/check: Success]")
         step_idx += 1
-        yield colors.copy(), explanation
+        yield colors.copy(), msgs
 
 
 def welsh_powell_steps(graph):
@@ -73,11 +72,12 @@ def welsh_powell_steps(graph):
         while c in used:
             c += 1
         colors[v] = c
-        explanation = f"Step {step_idx}: Welsh-Powell (degree-based) choice for node {v+1}.\n"
-        explanation += f"- Neighbor colors in use: {used}.\n"
-        explanation += f"- Assigned color {c}.\n"
+        msgs = [f"Step {step_idx}: Welsh-Powell (degree-based) choice for node {v+1}."]
+        msgs.append(f"- Neighbor colors in use: {used}.")
+        msgs.append(f"- Assigned color {c}.")
+        if v == n: msgs.append("\n:green-badge[:material/check: Success]")
         step_idx += 1
-        yield colors.copy(), explanation
+        yield colors.copy(), msgs
 
 
 def dsatur_steps(graph):
@@ -103,8 +103,9 @@ def dsatur_steps(graph):
 
         colors[v] = c
         uncolored.remove(v)
-        explanation = f"Step {step_idx}: DSATUR choice for node {v+1}.\n"
-        explanation += f"- Saturation degrees: {sat_degrees}.\n"
-        explanation += f"- Assigned color {c}.\n"
+        msgs = [f"Step {step_idx}: DSATUR choice for node {v+1}."]
+        msgs.append(f"- Saturation degrees: {sat_degrees}.")
+        msgs.append(f"- Assigned color {c}.")
+        # if v == n: msgs.append("\n:green-badge[:material/check: Success]")
         step_idx += 1
-        yield colors.copy(), explanation
+        yield colors.copy(), msgs
