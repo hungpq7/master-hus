@@ -1,7 +1,16 @@
-$f(x)=a^Tx$
-- $\nabla f(x)=a$
-- $\nabla^2 f(x)=a$
 
+# 1. Linear Algebra
+- Numbers are scalars ($a,b,\dots$)
+- Vectors are variables ($u,v,\dots$)
+- Matrices are linear transformations ($A,B,\dots$)
+- Operators if not being mentioned are the same as in Algebra
 
-$1/2t ||y-x||^2$
-- $\nabla^2=1/2t(y-x)^T(y-x)=(y^Ty-2y^Tx+x^Tx)/2t=y^Ty/2t=I/t$
+### Vectors
+- Vector of zeros $0$, vector of ones $1$
+- Dot product $u^Tv=v^Tu$, norm 2 $\|u\|^2 = u^T u$
+
+### Matrices
+- Unit vector $I$, matrix of ones $J$
+- $I=A^{-1}A=AA^{-1}$ (if invertible)
+
+## Calculus
