@@ -3,6 +3,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 from graphviz import Digraph
 
 st.set_page_config(page_title="PR Variants — Toy Graph", layout="wide")
@@ -110,18 +111,19 @@ with left:
 
 with right:
     st.markdown("**Google Matrix G (rounded)**")
-    df_G = pd.DataFrame(G, index=node_ids, columns=node_ids).round(2)
     st.dataframe(df_G, use_container_width=True, height=300)
 
-    st.markdown("**Heatmap**")
-    fig, ax = plt.subplots(figsize=(6, 4))
-    im = ax.imshow(G, aspect="auto")
-    ax.set_xticks(range(n)); ax.set_xticklabels(node_ids)
-    ax.set_yticks(range(n)); ax.set_yticklabels(node_ids)
-    ax.set_xlabel("to"); ax.set_ylabel("from")
-    for i in range(n):
-        for j in range(n):
-            ax.text(j, i, f"{G[i, j]:.2f}", ha="center", va="center", fontsize=7)
+    st.markdown("**Heatmap (seaborn)**")
+    palette = sns.diverging_palette(20, 220, n=20)[10:]  # per your spec
+    fig, ax = plt.subplots(figsize=(8, 6))
+    # values in G are probabilities in [0,1], so use vmin=0, vmax=1
+    sns.heatmap(
+        df_G.astype(float), square=True, annot=True,
+        cmap=palette, vmin=0, vmax=1, cbar=True, ax=ax,
+        fmt=".2f", linewidths=0.5, linecolor="white"
+    )
+    ax.set_xlabel("to")
+    ax.set_ylabel("from")
     st.pyplot(fig, clear_figure=True)
 
 # ----------------------
