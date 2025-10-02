@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.express as px
 from graphviz import Digraph
 
 st.set_page_config(page_title="PR Variants — Toy Graph", layout="wide")
@@ -98,54 +99,6 @@ df_nodes = pd.DataFrame(rows).sort_values("pageid").reset_index(drop=True)
 st.dataframe(df_nodes, use_container_width=True)
 
 # ----------------------
-# 2) Adjacency, Transition, Google Matrices
-# ----------------------
-st.subheader("Topic-Sensitive Teleport & Damped Transition Matrix")
-
-left, right = st.columns([1, 2])
-
-# with left:
-#     st.markdown(f"**Topic teleport:** `{topic_choice}`")
-#     tp_series = pd.Series({n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids})
-#     st.table(tp_series.rename("probability").round(2))
-
-with left:
-    st.markdown(f"**Topic teleport:** `{topic_choice}`")
-    # Build series in node order for consistent labeling
-    tp_series = pd.Series(
-        {n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids}
-    ).reindex(node_ids).fillna(0.0)
-
-    # Pie chart of teleport probabilities
-    fig, ax = plt.subplots(figsize=(5, 5))
-    # Only label slices with non-zero mass
-    labels = [n if p > 0 else "" for n, p in tp_series.items()]
-    wedges, texts, autotexts = ax.pie(
-        tp_series.values,
-        labels=labels,
-        autopct=lambda p: f"{p:.0f}%" if p > 0 else "",
-        startangle=90
-    )
-    ax.axis("equal")  # Equal aspect ratio for a perfect circle
-    ax.set_title("Teleport distribution")
-    st.pyplot(fig, clear_figure=True)
-
-
-with right:
-    st.markdown("**Heatmap (seaborn)**")
-    palette = sns.diverging_palette(20, 220, n=20)[10:]  # per your spec
-    fig, ax = plt.subplots(figsize=(8, 6))
-    # values in G are probabilities in [0,1], so use vmin=0, vmax=1
-    sns.heatmap(
-        df_G.astype(float), square=True, annot=True,
-        cmap=palette, vmin=0, vmax=1, cbar=True, ax=ax,
-        fmt=".2f", linewidths=0.5, linecolor="white"
-    )
-    ax.set_xlabel("to")
-    ax.set_ylabel("from")
-    st.pyplot(fig, clear_figure=True)
-
-# ----------------------
 # 2) Graph (Graphviz)
 # ----------------------
 st.subheader("Link Graph (nodes labeled by pageid)")
@@ -167,16 +120,70 @@ for u, v, w in EDGES:
         dot.edge(u, v)
 
 st.graphviz_chart(dot, use_container_width=True)
-
-# ----------------------
-# 3) Topic teleport
-# ----------------------
-st.subheader("Topic-Sensitive Teleport Distribution")
-col1, col2 = st.columns([1, 2])
-with col1:
-    st.markdown(f"**Topic:** `{topic_choice}`")
-with col2:
-    tp_series = pd.Series(TOPIC_TELEPORT[topic_choice]).sort_values(ascending=False)
-    st.bar_chart(tp_series)
-
 st.caption("Seeds for TrustRank are highlighted in green; spam pages in red. Edge labels (optional) show weights for Weighted PageRank.")
+
+# ----------------------
+# 3) Adjacency, Transition, Google Matrices
+# ----------------------
+st.subheader("Topic-Sensitive Teleport & Damped Transition Matrix")
+
+left, right = st.columns([1, 2])
+
+
+with left:
+    st.markdown(f"**Topic teleport:** `{topic_choice}`")
+    # Build series in node order for consistent labeling
+    tp_series = pd.Series(
+        {n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids}
+    ).reindex(node_ids).fillna(0.0)
+
+    df_tp = tp_series.rename("probability").reset_index().rename(columns={"index": "node"})
+
+    fig = px.pie(
+        df_tp, values="probability", names="node",
+        title="Teleport distribution",
+        hole=0.0
+    )
+    # Show percentages on slices; keep a clean hover
+    fig.update_traces(textposition="inside", texttemplate="%{percent}",
+                      hovertemplate="Node %{label}<br>p=%{value:.2f}<extra></extra>")
+    fig.update_layout(showlegend=True)
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+# with left:
+#     st.markdown(f"**Topic teleport:** `{topic_choice}`")
+#     # Build series in node order for consistent labeling
+#     tp_series = pd.Series(
+#         {n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids}
+#     ).reindex(node_ids).fillna(0.0)
+
+#     # Pie chart of teleport probabilities
+#     fig, ax = plt.subplots(figsize=(5, 5))
+#     # Only label slices with non-zero mass
+#     labels = [n if p > 0 else "" for n, p in tp_series.items()]
+#     wedges, texts, autotexts = ax.pie(
+#         tp_series.values,
+#         labels=labels,
+#         autopct=lambda p: f"{p:.0f}%" if p > 0 else "",
+#         startangle=90
+#     )
+#     ax.axis("equal")  # Equal aspect ratio for a perfect circle
+#     ax.set_title("Teleport distribution")
+#     st.pyplot(fig, clear_figure=True)
+
+
+with right:
+    st.markdown("**Heatmap (seaborn)**")
+    palette = sns.diverging_palette(20, 220, n=20)[10:]  # per your spec
+    fig, ax = plt.subplots(figsize=(8, 6))
+    # values in G are probabilities in [0,1], so use vmin=0, vmax=1
+    sns.heatmap(
+        df_G.astype(float), square=True, annot=True,
+        cmap=palette, vmin=0, vmax=1, cbar=True, ax=ax,
+        fmt=".2f", linewidths=0.5, linecolor="white"
+    )
+    ax.set_xlabel("to")
+    ax.set_ylabel("from")
+    st.pyplot(fig, clear_figure=True)
