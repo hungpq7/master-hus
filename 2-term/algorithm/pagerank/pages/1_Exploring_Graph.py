@@ -1,6 +1,7 @@
 # app.py
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 from graphviz import Digraph
 
 st.set_page_config(page_title="PR Variants — Toy Graph", layout="wide")
@@ -49,6 +50,32 @@ TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
 st.sidebar.header("Controls")
 show_edge_weights = st.sidebar.checkbox("Show edge weights", value=True)
 
+# Build ordered node list and indices
+node_ids = sorted(NODES.keys())
+idx = {n: i for i, n in enumerate(node_ids)}
+n = len(node_ids)
+
+# Weighted adjacency A (rows: from, cols: to)
+A = np.zeros((n, n), dtype=float)
+for u, v, w in EDGES:
+    A[idx[u], idx[v]] += float(w)
+
+# Row-normalized transition P (uniform row if dangling)
+row_sums = A.sum(axis=1, keepdims=True)
+P = np.where(row_sums > 0, A / row_sums, 1.0 / n)
+
+# Topic teleport vector v (falls back to uniform if empty)
+v = np.zeros(n, dtype=float)
+for node, prob in TOPIC_TELEPORT.get(topic_choice, {}).items():
+    v[idx[node]] = prob
+if v.sum() == 0:
+    v[:] = 1.0 / n
+else:
+    v /= v.sum()
+
+# Google matrix G(α) = αP + (1-α) 1 v^T
+G = alpha * P + (1 - alpha) * np.outer(np.ones(n), v)
+
 
 # ----------------------
 # 1) Table of pages
@@ -64,6 +91,34 @@ for nid, attrs in NODES.items():
     })
 df_nodes = pd.DataFrame(rows).sort_values("pageid").reset_index(drop=True)
 st.dataframe(df_nodes, use_container_width=True)
+
+# ----------------------
+# 2) Adjacency, Transition, Google Matrices
+# ----------------------
+st.subheader("Topic-Sensitive Teleport & Damped Transition Matrix")
+
+left, right = st.columns([1, 2])
+
+with left:
+    st.markdown(f"**Topic teleport:** `{topic_choice}`")
+    tp_series = pd.Series({n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids})
+    st.table(tp_series.rename("probability").round(2))
+
+with right:
+    st.markdown("**Google Matrix G (rounded)**")
+    df_G = pd.DataFrame(G, index=node_ids, columns=node_ids).round(2)
+    st.dataframe(df_G, use_container_width=True, height=300)
+
+    st.markdown("**Heatmap**")
+    fig, ax = plt.subplots(figsize=(6, 4))
+    im = ax.imshow(G, aspect="auto")
+    ax.set_xticks(range(n)); ax.set_xticklabels(node_ids)
+    ax.set_yticks(range(n)); ax.set_yticklabels(node_ids)
+    ax.set_xlabel("to"); ax.set_ylabel("from")
+    for i in range(n):
+        for j in range(n):
+            ax.text(j, i, f"{G[i, j]:.2f}", ha="center", va="center", fontsize=7)
+    st.pyplot(fig, clear_figure=True)
 
 # ----------------------
 # 2) Graph (Graphviz)
