@@ -104,15 +104,34 @@ st.subheader("Topic-Sensitive Teleport & Damped Transition Matrix")
 
 left, right = st.columns([1, 2])
 
+# with left:
+#     st.markdown(f"**Topic teleport:** `{topic_choice}`")
+#     tp_series = pd.Series({n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids})
+#     st.table(tp_series.rename("probability").round(2))
+
 with left:
     st.markdown(f"**Topic teleport:** `{topic_choice}`")
-    tp_series = pd.Series({n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids})
-    st.table(tp_series.rename("probability").round(2))
+    # Build series in node order for consistent labeling
+    tp_series = pd.Series(
+        {n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids}
+    ).reindex(node_ids).fillna(0.0)
+
+    # Pie chart of teleport probabilities
+    fig, ax = plt.subplots(figsize=(5, 5))
+    # Only label slices with non-zero mass
+    labels = [n if p > 0 else "" for n, p in tp_series.items()]
+    wedges, texts, autotexts = ax.pie(
+        tp_series.values,
+        labels=labels,
+        autopct=lambda p: f"{p:.0f}%" if p > 0 else "",
+        startangle=90
+    )
+    ax.axis("equal")  # Equal aspect ratio for a perfect circle
+    ax.set_title("Teleport distribution")
+    st.pyplot(fig, clear_figure=True)
+
 
 with right:
-    st.markdown("**Google Matrix G (rounded)**")
-    st.dataframe(df_G, use_container_width=True, height=300)
-
     st.markdown("**Heatmap (seaborn)**")
     palette = sns.diverging_palette(20, 220, n=20)[10:]  # per your spec
     fig, ax = plt.subplots(figsize=(8, 6))
