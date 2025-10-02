@@ -80,7 +80,7 @@ else:
 
 # Google matrix G(α) = αP + (1-α) 1 v^T
 G = alpha * P + (1 - alpha) * np.outer(np.ones(n), v)
-
+df_G = pd.DataFrame(G, index=node_ids, columns=node_ids).round(2)
 
 # ----------------------
 # 1) Table of pages
