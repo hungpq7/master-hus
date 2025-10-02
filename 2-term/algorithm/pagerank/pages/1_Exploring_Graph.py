@@ -94,7 +94,7 @@ st.graphviz_chart(dot, use_container_width=True)
 st.subheader("Topic-Sensitive Teleport Distribution")
 col1, col2 = st.columns([1, 2])
 with col1:
-    topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
+    topic_choice = st.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
     st.markdown(f"**Topic:** `{topic_choice}`")
 with col2:
     tp_series = pd.Series(TOPIC_TELEPORT[topic_choice]).sort_values(ascending=False)
