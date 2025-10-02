@@ -1,6 +1,5 @@
 import streamlit as st  
 
-import sys; sys.path.append('..')
-from ..data import NODES
+from data.sample import NODES
 
 st.write(NODES)
