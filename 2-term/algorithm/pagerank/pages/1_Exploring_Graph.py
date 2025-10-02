@@ -50,6 +50,9 @@ TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
 # ----------------------
 st.sidebar.header("Controls")
 show_edge_weights = st.sidebar.checkbox("Show edge weights", value=True)
+st.sidebar.markdown(f"**Topic:** `{topic_choice}`")
+alpha = st.sidebar.slider("Damping factor (α)", 0.0, 1.0, 0.85, 0.01)
+
 
 # Build ordered node list and indices
 node_ids = sorted(NODES.keys())
@@ -151,7 +154,6 @@ st.subheader("Topic-Sensitive Teleport Distribution")
 col1, col2 = st.columns([1, 2])
 with col1:
     topic_choice = st.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
-    st.markdown(f"**Topic:** `{topic_choice}`")
 with col2:
     tp_series = pd.Series(TOPIC_TELEPORT[topic_choice]).sort_values(ascending=False)
     st.bar_chart(tp_series)
