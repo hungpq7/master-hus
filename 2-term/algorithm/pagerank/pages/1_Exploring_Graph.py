@@ -157,7 +157,7 @@ with right:
     sns.heatmap(
         df_G.astype(float), square=True, annot=True,
         cmap=palette, vmin=0, vmax=1, cbar=True, ax=ax,
-        fmt=".2%", linewidths=0.5, linecolor="white"
+        fmt=".0%", linewidths=0.5, linecolor="white"
     )
     ax.set_xlabel("to")
     ax.set_ylabel("from")
