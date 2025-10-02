@@ -48,10 +48,7 @@ TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
 # ----------------------
 st.sidebar.header("Controls")
 show_edge_weights = st.sidebar.checkbox("Show edge weights", value=True)
-rankdir = st.sidebar.selectbox("Graph direction", ["LR", "TB"], index=0)
-node_size = st.sidebar.slider("Node fontsize", 10, 26, 14)
 
-topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
 
 # ----------------------
 # 1) Table of pages
@@ -72,8 +69,8 @@ st.dataframe(df_nodes, use_container_width=True)
 # 2) Graph (Graphviz)
 # ----------------------
 st.subheader("Link Graph (nodes labeled by pageid)")
-dot = Digraph(graph_attr={"rankdir": rankdir, "fontsize": "12", "labelloc":"t", "label": "Toy Web Graph"})
-dot.attr("node", shape="circle", style="filled", fontname="Helvetica", fontsize=str(node_size))
+dot = Digraph(graph_attr={"rankdir": "LR", "fontsize": "12", "labelloc":"t", "label": "Toy Web Graph"})
+dot.attr("node", shape="circle", style="filled", fontname="Helvetica", fontsize='14')
 
 for nid, a in NODES.items():
     # color scheme: green = TrustRank seed, red = spam, lightgray = normal
@@ -95,12 +92,12 @@ st.graphviz_chart(dot, use_container_width=True)
 # 3) Topic teleport
 # ----------------------
 st.subheader("Topic-Sensitive Teleport Distribution")
-tp_series = pd.Series(TOPIC_TELEPORT[topic_choice]).sort_values(ascending=False)
 col1, col2 = st.columns([1, 2])
 with col1:
+    topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
     st.markdown(f"**Topic:** `{topic_choice}`")
-    st.table(tp_series.rename("probability"))
 with col2:
+    tp_series = pd.Series(TOPIC_TELEPORT[topic_choice]).sort_values(ascending=False)
     st.bar_chart(tp_series)
 
 st.caption("Seeds for TrustRank are highlighted in green; spam pages in red. Edge labels (optional) show weights for Weighted PageRank.")
