@@ -1,22 +1,26 @@
-import streamlit as st  
+# app.py
+import streamlit as st
+import pandas as pd
+from graphviz import Digraph
 
-# ---------- Nodes ----------
-# Dict keyed by node id with attributes.
+st.set_page_config(page_title="PR Variants — Toy Graph", layout="wide")
+
+# ----------------------
+# Data (from our toy set)
+# ----------------------
 NODES = {
-    "A": {"name": "TechBlog",     "topics": ["Tech"],                 "is_spam": False},
-    "B": {"name": "TechForum",    "topics": ["Tech"],                 "is_spam": False},
-    "C": {"name": "SearchEngine", "topics": ["Tech","Sports"],        "is_spam": False},
-    "D": {"name": "SportsNews",   "topics": ["Sports"],               "is_spam": False},
-    "E": {"name": "SportsForum",  "topics": ["Sports"],               "is_spam": False},
-    "F": {"name": "CookingBlog",  "topics": ["Cooking"],              "is_spam": False},
-    "G": {"name": "CheapPills",   "topics": [],                       "is_spam": True},
-    "H": {"name": "Casino",       "topics": [],                       "is_spam": True},
-    "I": {"name": "University",   "topics": ["Tech"],                 "is_spam": False},
+    "A": {"name": "TechBlog",     "topics": ["Tech"],                    "is_spam": False},
+    "B": {"name": "TechForum",    "topics": ["Tech"],                    "is_spam": False},
+    "C": {"name": "SearchEngine", "topics": ["Tech","Sports"],           "is_spam": False},
+    "D": {"name": "SportsNews",   "topics": ["Sports"],                  "is_spam": False},
+    "E": {"name": "SportsForum",  "topics": ["Sports"],                  "is_spam": False},
+    "F": {"name": "CookingBlog",  "topics": ["Cooking"],                 "is_spam": False},
+    "G": {"name": "CheapPills",   "topics": [],                          "is_spam": True},
+    "H": {"name": "Casino",       "topics": [],                          "is_spam": True},
+    "I": {"name": "University",   "topics": ["Tech"],                    "is_spam": False},
     "J": {"name": "Wikipedia",    "topics": ["Tech","Sports","Cooking"], "is_spam": False},
 }
 
-# ---------- Edges (directed) ----------
-# Each edge is (source, target, weight). For vanilla PR, ignore weight; for WPR use it.
 EDGES = [
     ("A","B",5), ("A","C",2), ("A","J",1),
     ("B","A",3), ("B","C",2), ("B","G",1),
@@ -30,24 +34,73 @@ EDGES = [
     ("J","A",2), ("J","D",2), ("J","F",1), ("J","I",3),
 ]
 
-# ---------- Topic-Sensitive teleport distributions (sum to 1 per topic) ----------
 TOPIC_TELEPORT = {
     "Tech":    {"A":0.25, "B":0.25, "C":0.20, "I":0.15, "J":0.15},
     "Sports":  {"D":0.35, "E":0.25, "C":0.20, "J":0.20},
     "Cooking": {"F":0.60, "J":0.40},
-    # Optional catch-all:
     "General": {"J":0.50, "C":0.30, "I":0.20},
 }
 
-# ---------- Personalized PageRank seeds (sum to 1 per user) ----------
-PPR_SEEDS = {
-    "alex": {"A":0.5, "B":0.5},      # Tech-inclined
-    "sam":  {"D":0.5, "E":0.5},      # Sports-inclined
-}
-
-# ---------- TrustRank ----------
-# Good/whitelist seeds; ground truth spam labels are in NODES[*]["is_spam"] (G,H=True)
 TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
 
+# ----------------------
+# Sidebar controls
+# ----------------------
+st.sidebar.header("Controls")
+show_edge_weights = st.sidebar.checkbox("Show edge weights", value=True)
+rankdir = st.sidebar.selectbox("Graph direction", ["LR", "TB"], index=0)
+node_size = st.sidebar.slider("Node fontsize", 10, 26, 14)
 
-st.write(NODES)
+topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
+
+# ----------------------
+# 1) Table of pages
+# ----------------------
+st.subheader("Pages")
+rows = []
+for nid, attrs in NODES.items():
+    rows.append({
+        "pageid": nid,
+        "page name": attrs["name"],
+        "page topic(s)": ", ".join(attrs["topics"]) if attrs["topics"] else "(none)",
+        "is_seed": nid in TRUSTRANK_GOOD_SEEDS
+    })
+df_nodes = pd.DataFrame(rows).sort_values("pageid").reset_index(drop=True)
+st.dataframe(df_nodes, use_container_width=True)
+
+# ----------------------
+# 2) Graph (Graphviz)
+# ----------------------
+st.subheader("Link Graph (nodes labeled by pageid)")
+dot = Digraph(graph_attr={"rankdir": rankdir, "fontsize": "12", "labelloc":"t", "label": "Toy Web Graph"})
+dot.attr("node", shape="circle", style="filled", fontname="Helvetica", fontsize=str(node_size))
+
+for nid, a in NODES.items():
+    # color scheme: green = TrustRank seed, red = spam, lightgray = normal
+    fill = "#b7e1cd" if nid in TRUSTRANK_GOOD_SEEDS else ("#f4c7c3" if a["is_spam"] else "#e5e5e5")
+    # label by pageid; add name in tooltip-like comment via xlabel for readability
+    label = nid
+    xlabel = a["name"]
+    dot.node(nid, label=label, fillcolor=fill, xlabel=xlabel)
+
+for u, v, w in EDGES:
+    if show_edge_weights:
+        dot.edge(u, v, label=str(w))
+    else:
+        dot.edge(u, v)
+
+st.graphviz_chart(dot, use_container_width=True)
+
+# ----------------------
+# 3) Topic teleport
+# ----------------------
+st.subheader("Topic-Sensitive Teleport Distribution")
+tp_series = pd.Series(TOPIC_TELEPORT[topic_choice]).sort_values(ascending=False)
+col1, col2 = st.columns([1, 2])
+with col1:
+    st.markdown(f"**Topic:** `{topic_choice}`")
+    st.table(tp_series.rename("probability"))
+with col2:
+    st.bar_chart(tp_series)
+
+st.caption("Seeds for TrustRank are highlighted in green; spam pages in red. Edge labels (optional) show weights for Weighted PageRank.")
