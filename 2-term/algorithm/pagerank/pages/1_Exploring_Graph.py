@@ -127,9 +127,7 @@ st.caption("Seeds for TrustRank are highlighted in green; spam pages in red. Edg
 # ----------------------
 st.subheader("Topic-Sensitive Teleport & Damped Transition Matrix")
 
-left, right = st.columns([1, 2])
-
-
+left, right = st.columns([2, 3])
 with left:
     st.markdown(f"**Topic teleport:** `{topic_choice}`")
     # Build series in node order for consistent labeling
@@ -150,29 +148,6 @@ with left:
     fig.update_layout(showlegend=True)
 
     st.plotly_chart(fig, use_container_width=True)
-
-
-# with left:
-#     st.markdown(f"**Topic teleport:** `{topic_choice}`")
-#     # Build series in node order for consistent labeling
-#     tp_series = pd.Series(
-#         {n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids}
-#     ).reindex(node_ids).fillna(0.0)
-
-#     # Pie chart of teleport probabilities
-#     fig, ax = plt.subplots(figsize=(5, 5))
-#     # Only label slices with non-zero mass
-#     labels = [n if p > 0 else "" for n, p in tp_series.items()]
-#     wedges, texts, autotexts = ax.pie(
-#         tp_series.values,
-#         labels=labels,
-#         autopct=lambda p: f"{p:.0f}%" if p > 0 else "",
-#         startangle=90
-#     )
-#     ax.axis("equal")  # Equal aspect ratio for a perfect circle
-#     ax.set_title("Teleport distribution")
-#     st.pyplot(fig, clear_figure=True)
-
 
 with right:
     st.markdown("**Heatmap (seaborn)**")
