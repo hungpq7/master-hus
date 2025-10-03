@@ -60,6 +60,10 @@ alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
 tol = st.sidebar.number_input("Stop tolerance (L1 distance)", min_value=1e-10, max_value=1.0, value=1e-6, step=1e-6, format="%.0e")
 max_iter = st.sidebar.slider("Max iterations", 1, 500, 100)
 
+p = np.zeros(n, dtype=float)
+p[:] = 1.0 / n
+G = alpha * A + (1 - alpha) * np.outer(np.ones(n), p)
+
 # ----------------------
 # Session state initialization
 # ----------------------
@@ -161,7 +165,8 @@ def step_once():
     # Teleport vector v: uniform
     v = np.ones(n) / n
     # Next iterate: r_{k+1}^T = α r_k^T P + (1-α) v^T
-    r_next = alpha * (r @ A) + (1 - alpha) * v
+    # r_next = alpha * (r @ G) + (1 - alpha) * v
+    r_next = G @ r
     # Normalize defensively
     r_next = r_next / r_next.sum()
     delta = np.abs(r_next - r).sum()
