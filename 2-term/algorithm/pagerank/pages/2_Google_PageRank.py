@@ -217,8 +217,8 @@ r_k = st.session_state.pi_hist[k]
 delta = st.session_state.pi_last_delta if k > 0 else None
 
 # Metrics row
-col1, col2, col3 = st.columns(3)
-
+st.divider()
+col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.metric("Iteration (k)", k)
 
@@ -234,9 +234,10 @@ with col3:
         val = f"{delta:.2e}"
         tol_txt = f"tol = {tol:.1e}"
         if st.session_state.pi_converged:
-            st.metric("L1 change ‖πₖ−πₖ₋₁‖₁", val, delta="≤ tol", delta_color="inverse")
+            st.metric("L1 change", val, delta="≤ tol", delta_color="inverse")
         else:
-            st.metric("L1 change ‖πₖ−πₖ₋₁‖₁", val, delta=tol_txt, delta_color="off")
+            st.metric("L1 change", val, delta=tol_txt, delta_color="off")
+st.divider()
 
 
 # st.markdown(f"### Iteration $k = {k}$  |  $\\alpha = {alpha:.2f}$")
