@@ -7,9 +7,6 @@ import seaborn as sns
 import plotly.express as px
 from graphviz import Digraph
 
-ip = get_ipython()
-ip.run_line_magic("config", "InlineBackend.figure_format = 'retina'")
-
 st.set_page_config(page_title="PR Variants — Toy Graph", layout="wide")
 
 # ----------------------
