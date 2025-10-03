@@ -212,7 +212,7 @@ st.write(f"Status: {status}")
 if delta is not None:
     st.write(f"L1 change from k-1 → k: **{delta:.3e}**  (tol = {tol:.1e})")
 
-col1, col2 = st.columns(2):
+col1, col2 = st.columns(2)
 with col1:
     st.subheader("Graph View")
     fig_graph = graph_pr_figure(r_k)
