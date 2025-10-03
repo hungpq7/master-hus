@@ -184,7 +184,7 @@ def run_all():
 # ----------------------
 # UI: Buttons
 # ----------------------
-colA, colB, colC = st.columns([1,1,2])
+colA, colB, colC, colD = st.columns([1,1,2])
 with colA:
     if st.button("◀ Prev", use_container_width=True):
         step_prev()
@@ -196,8 +196,11 @@ with colB:
         else:
             st.session_state.pi_k += 1
 with colC:
-    if st.button("Run all (until converge)", use_container_width=True):
+    if st.button("Run all", use_container_width=True, type="primary"):
         run_all()
+with colD:
+    if st.button("Reset", use_container_width=True, type="primary"):
+        reset_state()
 
 # ----------------------
 # Display: iteration status and current rank vector
