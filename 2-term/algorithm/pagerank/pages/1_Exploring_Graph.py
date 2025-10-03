@@ -69,6 +69,8 @@ for u, v, w in EDGES:
     else:
         A[idx[v], idx[u]] += 1
 
+st.write(A)
+
 # Row-normalized transition P (uniform row if dangling)
 col_sums = A.sum(axis=0, keepdims=True)
 P = np.where(col_sums > 0, A / col_sums, 1.0 / n)
