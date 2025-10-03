@@ -52,7 +52,7 @@ TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
 # ----------------------
 st.sidebar.header("Controls")
 show_edge_weights = st.sidebar.checkbox("Show edge weights", value=True)
-alpha = st.sidebar.slider("Damping factor ($\\alpha$ α)", 0.0, 1.0, 0.85, 0.01)
+alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
 topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
 
 
@@ -90,25 +90,25 @@ st.subheader("Pages")
 rows = []
 for nid, attrs in NODES.items():
     rows.append({
-        "pageid": nid,
-        "page name": attrs["name"],
-        "page topic(s)": ", ".join(attrs["topics"]) if attrs["topics"] else "(none)",
+        "PageID": nid,
+        "PageName": attrs["name"],
+        "PageTopic": ",".join(attrs["topics"]) if attrs["topics"] else "",
         "is_seed": nid in TRUSTRANK_GOOD_SEEDS
     })
-df_nodes = pd.DataFrame(rows).sort_values("pageid").reset_index(drop=True)
+df_nodes = pd.DataFrame(rows).sort_values("PageID").reset_index(drop=True)
 st.dataframe(df_nodes, use_container_width=True)
 
 # ----------------------
 # 2) Graph (Graphviz)
 # ----------------------
-st.subheader("Link Graph (nodes labeled by pageid)")
+st.subheader("Link Graph")
 dot = Digraph(graph_attr={"rankdir": "LR", "fontsize": "12", "labelloc":"t", "label": "Toy Web Graph"})
 dot.attr("node", shape="circle", style="filled", fontname="Helvetica", fontsize='14')
 
 for nid, a in NODES.items():
     # color scheme: green = TrustRank seed, red = spam, lightgray = normal
     fill = "#b7e1cd" if nid in TRUSTRANK_GOOD_SEEDS else ("#f4c7c3" if a["is_spam"] else "#e5e5e5")
-    # label by pageid; add name in tooltip-like comment via xlabel for readability
+    # label by page_id; add name in tooltip-like comment via xlabel for readability
     label = nid
     xlabel = a["name"]
     dot.node(nid, label=label, fillcolor=fill, xlabel=xlabel)
@@ -161,4 +161,4 @@ with right:
     )
     ax.set_xlabel("to")
     ax.set_ylabel("from")
-    st.pyplot(fig, clear_figure=True)
+    st.pyplot(fig, clear_figure=True, format="svg")
