@@ -51,17 +51,17 @@ TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
 # Sidebar controls
 # ----------------------
 st.sidebar.header("Controls")
-use_edge_weights = st.sidebar.checkbox("Use edge weights", value=False)
-use_topic_teleport = st.sidebar.checkbox("Use topic teleport", value=False)
 use_damping_factor = st.sidebar.checkbox("Use damping factor", value=False)
-
 if use_damping_factor:
     alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
 else:
     alpha = 1.0
 
+use_topic_teleport = st.sidebar.checkbox("Use topic teleport", value=False)
 if use_topic_teleport:
     topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
+
+use_edge_weights = st.sidebar.checkbox("Use edge weights", value=False)
 
 # Build ordered node list and indices
 node_ids = sorted(NODES.keys())
@@ -100,18 +100,17 @@ df_G = pd.DataFrame(G, index=node_ids, columns=node_ids).round(2)
 # ----------------------
 # 1) Table of pages
 # ----------------------
-# st.subheader("Pages")
-with st.expander("# Web pages"):
-    rows = []
-    for nid, attrs in NODES.items():
-        rows.append({
-            "PageID": nid,
-            "PageName": attrs["name"],
-            "PageTopic": ", ".join(attrs["topics"]) if attrs["topics"] else "",
-            "SeedPage": nid in TRUSTRANK_GOOD_SEEDS
-        })
-    df_nodes = pd.DataFrame(rows).sort_values("PageID").reset_index(drop=True)
-    st.dataframe(df_nodes, hide_index=True, width='stretch')
+st.subheader("Pages")
+rows = []
+for nid, attrs in NODES.items():
+    rows.append({
+        "PageID": nid,
+        "PageName": attrs["name"],
+        "PageTopic": ", ".join(attrs["topics"]) if attrs["topics"] else "",
+        "SeedPage": nid in TRUSTRANK_GOOD_SEEDS
+    })
+df_nodes = pd.DataFrame(rows).sort_values("PageID").reset_index(drop=True)
+st.dataframe(df_nodes, hide_index=True, width='stretch')
 
 # ----------------------
 # 2) Graph (Graphviz)
@@ -135,7 +134,10 @@ for u, v, w in EDGES:
         dot.edge(u, v)
 
 st.graphviz_chart(dot, use_container_width=True)
-st.caption("Seeds for TrustRank are highlighted in green; spam pages in red. Edge labels (optional) show weights for Weighted PageRank.")
+st.caption(
+    "Seeds for TrustRank are highlighted in green; spam pages in red. "
+    "Edge labels (optional) show weights for Weighted PageRank."
+)
 
 # ----------------------
 # 3) Adjacency, Transition, Google Matrices
