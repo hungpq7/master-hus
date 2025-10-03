@@ -100,7 +100,7 @@ for nid, attrs in NODES.items():
         "SeedPage": nid in TRUSTRANK_GOOD_SEEDS
     })
 df_nodes = pd.DataFrame(rows).sort_values("PageID").reset_index(drop=True)
-st.dataframe(df_nodes, hide_index=True, width='content')
+st.dataframe(df_nodes, hide_index=True, width='stretch')
 
 # ----------------------
 # 2) Graph (Graphviz)
