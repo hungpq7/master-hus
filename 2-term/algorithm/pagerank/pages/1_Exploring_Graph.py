@@ -51,8 +51,8 @@ TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
 # Sidebar controls
 # ----------------------
 st.sidebar.header("Controls")
-show_edge_weights = st.sidebar.checkbox("Show edge weights", value=True)
-use_topic_teleport = st.sidebar.checkbox("Use topic teleport", value=True)
+use_edge_weights = st.sidebar.checkbox("Use edge weights", value=False)
+use_topic_teleport = st.sidebar.checkbox("Use topic teleport", value=False)
 alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
 topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
 
@@ -61,14 +61,17 @@ node_ids = sorted(NODES.keys())
 idx = {n: i for i, n in enumerate(node_ids)}
 n = len(node_ids)
 
-# Weighted adjacency A (rows: from, cols: to)
+# Weighted adjacency A (cols: from, rows: to)
 A = np.zeros((n, n), dtype=float)
 for u, v, w in EDGES:
-    A[idx[u], idx[v]] += float(w)
+    if use_edge_weights:
+        A[idx[v], idx[u]] += float(w)
+    else:
+        A[idx[v], idx[u]] += 1
 
 # Row-normalized transition P (uniform row if dangling)
-row_sums = A.sum(axis=1, keepdims=True)
-P = np.where(row_sums > 0, A / row_sums, 1.0 / n)
+col_sums = A.sum(axis=0, keepdims=True)
+P = np.where(col_sums > 0, A / col_sums, 1.0 / n)
 
 # Topic teleport vector v (falls back to uniform if empty)
 v = np.zeros(n, dtype=float)
@@ -118,7 +121,7 @@ for nid, a in NODES.items():
     dot.node(nid, label=label, fillcolor=fill, xlabel=xlabel)
 
 for u, v, w in EDGES:
-    if show_edge_weights:
+    if use_edge_weights:
         dot.edge(u, v, label=str(w))
     else:
         dot.edge(u, v)
