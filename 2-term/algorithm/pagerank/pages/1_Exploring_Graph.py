@@ -52,9 +52,9 @@ TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
 # ----------------------
 st.sidebar.header("Controls")
 show_edge_weights = st.sidebar.checkbox("Show edge weights", value=True)
+use_topic_teleport = st.sidebar.checkbox("Use topic teleport", value=True)
 alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
 topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
-
 
 # Build ordered node list and indices
 node_ids = sorted(NODES.keys())
@@ -72,12 +72,16 @@ P = np.where(row_sums > 0, A / row_sums, 1.0 / n)
 
 # Topic teleport vector v (falls back to uniform if empty)
 v = np.zeros(n, dtype=float)
-for node, prob in TOPIC_TELEPORT.get(topic_choice, {}).items():
-    v[idx[node]] = prob
-if v.sum() == 0:
-    v[:] = 1.0 / n
+if use_topic_teleport:
+    for node, prob in TOPIC_TELEPORT.get(topic_choice, {}).items():
+        v[idx[node]] = prob
+    if v.sum() == 0:
+        v[:] = 1.0 / n
+    else:
+        v /= v.sum()
 else:
-    v /= v.sum()
+    v[:] = 1.0 / n
+
 
 # Google matrix G(α) = αP + (1-α) 1 v^T
 G = alpha * P + (1 - alpha) * np.outer(np.ones(n), v)
@@ -92,11 +96,11 @@ for nid, attrs in NODES.items():
     rows.append({
         "PageID": nid,
         "PageName": attrs["name"],
-        "PageTopic": ",".join(attrs["topics"]) if attrs["topics"] else "",
+        "PageTopic": ", ".join(attrs["topics"]) if attrs["topics"] else "",
         "SeedPage": nid in TRUSTRANK_GOOD_SEEDS
     })
 df_nodes = pd.DataFrame(rows).sort_values("PageID").reset_index(drop=True)
-st.dataframe(df_nodes, use_container_width=True)
+st.dataframe(df_nodes, use_container_width=False)
 
 # ----------------------
 # 2) Graph (Graphviz)
@@ -143,10 +147,12 @@ with left:
         hole=0.0
     )
     # Show percentages on slices; keep a clean hover
-    fig.update_traces(textposition="inside", texttemplate="%{percent}",
-                      hovertemplate="Node %{label}<br>p=%{value:.2f}<extra></extra>")
+    fig.update_traces(
+        textposition="inside",
+        texttemplate="%{percent}",
+        hovertemplate="Node %{label}<br>p=%{value:.2f}<extra></extra>"
+    )
     fig.update_layout(showlegend=True)
-
     st.plotly_chart(fig, use_container_width=True)
 
 with right:
