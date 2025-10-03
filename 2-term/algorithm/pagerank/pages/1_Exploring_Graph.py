@@ -93,7 +93,7 @@ for nid, attrs in NODES.items():
         "PageID": nid,
         "PageName": attrs["name"],
         "PageTopic": ",".join(attrs["topics"]) if attrs["topics"] else "",
-        "is_seed": nid in TRUSTRANK_GOOD_SEEDS
+        "SeedPage": nid in TRUSTRANK_GOOD_SEEDS
     })
 df_nodes = pd.DataFrame(rows).sort_values("PageID").reset_index(drop=True)
 st.dataframe(df_nodes, use_container_width=True)
@@ -150,15 +150,14 @@ with left:
     st.plotly_chart(fig, use_container_width=True)
 
 with right:
-    st.markdown("**Heatmap (seaborn)**")
+    st.markdown("**Heatmap**")
     palette = sns.diverging_palette(20, 220, n=20)[10:]  # per your spec
     fig, ax = plt.subplots(figsize=(8, 6))
-    # values in G are probabilities in [0,1], so use vmin=0, vmax=1
     sns.heatmap(
         df_G.astype(float), square=True, annot=True,
         cmap=palette, vmin=0, vmax=1, cbar=True, ax=ax,
         fmt=".0%", linewidths=0.5, linecolor="white"
     )
-    ax.set_xlabel("to")
-    ax.set_ylabel("from")
-    st.pyplot(fig, clear_figure=True, dpi=1000)
+    ax.set_xlabel("To")
+    ax.set_ylabel("From")
+    st.pyplot(fig, clear_figure=True, dpi=500)
