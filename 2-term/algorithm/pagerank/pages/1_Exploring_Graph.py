@@ -57,6 +57,8 @@ use_damping_factor = st.sidebar.checkbox("Use damping factor", value=False)
 
 if use_damping_factor:
     alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
+else:
+    alpha = 1.0
 
 if use_topic_teleport:
     topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
