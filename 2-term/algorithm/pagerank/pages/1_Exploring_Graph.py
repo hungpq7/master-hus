@@ -100,17 +100,18 @@ df_G = pd.DataFrame(G, index=node_ids, columns=node_ids).round(2)
 # ----------------------
 # 1) Table of pages
 # ----------------------
-st.subheader("Pages")
-rows = []
-for nid, attrs in NODES.items():
-    rows.append({
-        "PageID": nid,
-        "PageName": attrs["name"],
-        "PageTopic": ", ".join(attrs["topics"]) if attrs["topics"] else "",
-        "SeedPage": nid in TRUSTRANK_GOOD_SEEDS
-    })
-df_nodes = pd.DataFrame(rows).sort_values("PageID").reset_index(drop=True)
-st.dataframe(df_nodes, hide_index=True, width='stretch')
+# st.subheader("Pages")
+with st.expander("# Web pages"):
+    rows = []
+    for nid, attrs in NODES.items():
+        rows.append({
+            "PageID": nid,
+            "PageName": attrs["name"],
+            "PageTopic": ", ".join(attrs["topics"]) if attrs["topics"] else "",
+            "SeedPage": nid in TRUSTRANK_GOOD_SEEDS
+        })
+    df_nodes = pd.DataFrame(rows).sort_values("PageID").reset_index(drop=True)
+    st.dataframe(df_nodes, hide_index=True, width='stretch')
 
 # ----------------------
 # 2) Graph (Graphviz)
