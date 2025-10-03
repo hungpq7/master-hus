@@ -53,8 +53,13 @@ TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
 st.sidebar.header("Controls")
 use_edge_weights = st.sidebar.checkbox("Use edge weights", value=False)
 use_topic_teleport = st.sidebar.checkbox("Use topic teleport", value=False)
-alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
-topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
+use_damping_factor = st.sidebar.checkbox("Use damping factor", value=False)
+
+if use_damping_factor:
+    alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
+
+if use_topic_teleport:
+    topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
 
 # Build ordered node list and indices
 node_ids = sorted(NODES.keys())
@@ -85,10 +90,6 @@ if use_topic_teleport:
         p /= p.sum()
 else:
     p[:] = 1.0 / n
-
-st.write(A)
-st.write(v)
-
 
 # Google matrix G(α) = αP + (1-α) 1 p^T
 G = alpha * A + (1 - alpha) * np.outer(np.ones(n), p)
@@ -137,32 +138,9 @@ st.caption("Seeds for TrustRank are highlighted in green; spam pages in red. Edg
 # 3) Adjacency, Transition, Google Matrices
 # ----------------------
 
-left, right = st.columns([2, 3])
+left, right = st.columns([3, 2])
 with left:
-    # Build series in node order for consistent labeling
-    tp_series = pd.Series(
-        {n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids}
-    ).reindex(node_ids).fillna(0.0)
-
-    df_tp = tp_series.rename("probability").reset_index().rename(columns={"index": "node"})
-
-    st.subheader("Teleport distribution")
-    st.markdown(f"Topic: `{topic_choice}`")
-    fig = px.pie(
-        df_tp, values="probability", names="node",
-        hole=0.0
-    )
-    # Show percentages on slices; keep a clean hover
-    fig.update_traces(
-        textposition="inside",
-        texttemplate="%{percent}",
-        hovertemplate="Node %{label}<br>p=%{value:.2f}<extra></extra>"
-    )
-    fig.update_layout(showlegend=True)
-    st.plotly_chart(fig, use_container_width=True)
-
-with right:
-    st.subheader("**Heatmap**")
+    st.subheader("Transition matrix $A$")
     palette = sns.diverging_palette(20, 220, n=20)[10:]  # per your spec
     fig, ax = plt.subplots(figsize=(8, 6))
     sns.heatmap(
@@ -173,3 +151,26 @@ with right:
     ax.set_xlabel("To")
     ax.set_ylabel("From")
     st.pyplot(fig, clear_figure=True, dpi=500)
+
+with right:
+    if use_topic_teleport:
+        tp_series = pd.Series(
+            {n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids}
+        ).reindex(node_ids).fillna(0.0)
+
+        df_tp = tp_series.rename("probability").reset_index().rename(columns={"index": "node"})
+
+        st.subheader("Teleport distribution")
+        st.markdown(f"Topic: `{topic_choice}`")
+        fig = px.pie(
+            df_tp, values="probability", names="node",
+            hole=0.0
+        )
+        # Show percentages on slices; keep a clean hover
+        fig.update_traces(
+            textposition="inside",
+            texttemplate="%{percent}",
+            hovertemplate="Node %{label}<br>p=%{value:.2f}<extra></extra>"
+        )
+        fig.update_layout(showlegend=True)
+        st.plotly_chart(fig, use_container_width=True)
