@@ -220,7 +220,7 @@ delta = st.session_state.pi_last_delta if k > 0 else None
 st.divider()
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    st.metric("Iteration (k)", k)
+    st.metric("Iteration", "$k={k}$")
 
 with col2:
     status = "✅ Converged" if st.session_state.pi_converged else "⏳ In progress"
