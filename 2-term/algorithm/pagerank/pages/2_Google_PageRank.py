@@ -144,7 +144,7 @@ def graph_pr_figure(scores: np.ndarray) -> go.Figure:
 
     fig = go.Figure(data=[edge_trace, node_trace])
     fig.update_layout(
-        title=f"Power Iteration — Node Sizes = PageRank (k={st.session_state.pi_k})",
+        # title=f"Power Iteration — Node Sizes = PageRank (k={st.session_state.pi_k})",
         xaxis=dict(visible=False),
         yaxis=dict(visible=False),
         margin=dict(l=10, r=10, t=40, b=10),
@@ -193,21 +193,21 @@ def run_all():
 # ----------------------
 colA, colB, colC, colD = st.columns([1,1,1,1])
 with colA:
+    if st.button("Reset", use_container_width=True, type="primary"):
+        reset_state()
+with colB:
     if st.button("◀ Prev", use_container_width=True):
         step_prev()
-with colB:
+with colC:
     if st.button("Next ▶", use_container_width=True):
         # If we're at the tail, compute a new step; otherwise move cursor forward
         if st.session_state.pi_k == len(st.session_state.pi_hist) - 1:
             step_once()
         else:
             st.session_state.pi_k += 1
-with colC:
+with colD:
     if st.button("Run all", use_container_width=True, type="primary"):
         run_all()
-with colD:
-    if st.button("Reset", use_container_width=True, type="primary"):
-        reset_state()
 
 # ----------------------
 # Display: iteration status and current rank vector
@@ -216,11 +216,34 @@ k = st.session_state.pi_k
 r_k = st.session_state.pi_hist[k]
 delta = st.session_state.pi_last_delta if k > 0 else None
 
-st.markdown(f"### Iteration $k = {k}$  |  $\\alpha = {alpha:.2f}$")
-status = "✅ Converged" if st.session_state.pi_converged else "⏳ In progress"
-st.write(f"Status: {status}")
-if delta is not None:
-    st.write(f"L1 change from $k-1\\to k$: {delta:.3e}  (tol = {tol:.1e})")
+# Metrics row
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric("Iteration (k)", k)
+
+with col2:
+    status = "✅ Converged" if st.session_state.pi_converged else "⏳ In progress"
+    st.metric("Status", status)
+
+with col3:
+    if delta is None:
+        st.metric("L1 change ‖πₖ−πₖ₋₁‖₁", "—", help="Shown once k ≥ 1")
+    else:
+        # Show the current change; mark '≤ tol' when converged
+        val = f"{delta:.2e}"
+        tol_txt = f"tol = {tol:.1e}"
+        if st.session_state.pi_converged:
+            st.metric("L1 change ‖πₖ−πₖ₋₁‖₁", val, delta="≤ tol", delta_color="inverse")
+        else:
+            st.metric("L1 change ‖πₖ−πₖ₋₁‖₁", val, delta=tol_txt, delta_color="off")
+
+
+# st.markdown(f"### Iteration $k = {k}$  |  $\\alpha = {alpha:.2f}$")
+# status = "✅ Converged" if st.session_state.pi_converged else "⏳ In progress"
+# st.write(f"Status: {status}")
+# if delta is not None:
+#     st.write(f"L1 change from $k-1\\to k$: {delta:.3e}  (tol = {tol:.1e})")
 
 col1, col2 = st.columns(2)
 with col1:
