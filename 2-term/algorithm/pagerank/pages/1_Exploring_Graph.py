@@ -52,7 +52,7 @@ TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
 # ----------------------
 st.sidebar.header("Controls")
 show_edge_weights = st.sidebar.checkbox("Show edge weights", value=True)
-alpha = st.sidebar.slider("Damping factor ($\alpha$ α)", 0.0, 1.0, 0.85, 0.01)
+alpha = st.sidebar.slider("Damping factor ($\\alpha$ α)", 0.0, 1.0, 0.85, 0.01)
 topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
 
 
