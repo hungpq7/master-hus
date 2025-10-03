@@ -161,4 +161,4 @@ with right:
     )
     ax.set_xlabel("to")
     ax.set_ylabel("from")
-    st.pyplot(fig, clear_figure=True, format="svg")
+    st.pyplot(fig, clear_figure=True, dpi=100)
