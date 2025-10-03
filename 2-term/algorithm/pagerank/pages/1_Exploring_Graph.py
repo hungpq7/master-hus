@@ -129,11 +129,9 @@ st.caption("Seeds for TrustRank are highlighted in green; spam pages in red. Edg
 # ----------------------
 # 3) Adjacency, Transition, Google Matrices
 # ----------------------
-st.subheader("Topic-Sensitive Teleport & Damped Transition Matrix")
 
 left, right = st.columns([2, 3])
 with left:
-    st.markdown(f"**Topic teleport:** `{topic_choice}`")
     # Build series in node order for consistent labeling
     tp_series = pd.Series(
         {n: TOPIC_TELEPORT.get(topic_choice, {}).get(n, 0.0) for n in node_ids}
@@ -141,9 +139,10 @@ with left:
 
     df_tp = tp_series.rename("probability").reset_index().rename(columns={"index": "node"})
 
+    st.subheader("Teleport distribution")
+    st.markdown(f"Topic: `{topic_choice}`")
     fig = px.pie(
         df_tp, values="probability", names="node",
-        title="Teleport distribution",
         hole=0.0
     )
     # Show percentages on slices; keep a clean hover
@@ -156,7 +155,7 @@ with left:
     st.plotly_chart(fig, use_container_width=True)
 
 with right:
-    st.markdown("**Heatmap**")
+    st.subheader("**Heatmap**")
     palette = sns.diverging_palette(20, 220, n=20)[10:]  # per your spec
     fig, ax = plt.subplots(figsize=(8, 6))
     sns.heatmap(
