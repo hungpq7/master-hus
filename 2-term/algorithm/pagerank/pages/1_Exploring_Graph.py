@@ -69,29 +69,29 @@ for u, v, w in EDGES:
     else:
         A[idx[v], idx[u]] += 1
 
-# Row-normalized transition P (uniform row if dangling)
+# Column-normalized transition A (uniform row if dangling)
 col_sums = A.sum(axis=0, keepdims=True)
-P = np.where(col_sums > 0, A / col_sums, 1.0 / n)
+A = np.where(col_sums > 0, A / col_sums, 1.0 / n)
 
 
 # Topic teleport vector v (falls back to uniform if empty)
-v = np.zeros(n, dtype=float)
+p = np.zeros(n, dtype=float)
 if use_topic_teleport:
     for node, prob in TOPIC_TELEPORT.get(topic_choice, {}).items():
-        v[idx[node]] = prob
-    if v.sum() == 0:
-        v[:] = 1.0 / n
+        p[idx[node]] = prob
+    if p.sum() == 0:
+        p[:] = 1.0 / n
     else:
-        v /= v.sum()
+        p /= p.sum()
 else:
-    v[:] = 1.0 / n
+    p[:] = 1.0 / n
 
-st.write(P)
+st.write(A)
 st.write(v)
 
 
-# Google matrix G(α) = αP + (1-α) 1 v^T
-G = alpha * P + (1 - alpha) * np.outer(np.ones(n), v)
+# Google matrix G(α) = αP + (1-α) 1 p^T
+G = alpha * A + (1 - alpha) * np.outer(np.ones(n), p)
 df_G = pd.DataFrame(G, index=node_ids, columns=node_ids).round(2)
 
 # ----------------------
