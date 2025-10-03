@@ -212,21 +212,19 @@ st.write(f"Status: {status}")
 if delta is not None:
     st.write(f"L1 change from k-1 → k: **{delta:.3e}**  (tol = {tol:.1e})")
 
-st.subheader("Graph View (node size reflects current PageRank)")
-fig_graph = graph_pr_figure(r_k)
-st.plotly_chart(fig_graph, use_container_width=True)
-
-# Table view (sorted by rank desc)
-df_rank = pd.DataFrame({
-    "node": NODE_IDS,
-    "score": r_k
-}).sort_values("score", ascending=False).reset_index(drop=True)
-# Bar chart
-fig = px.bar(df_rank, y="node", x="score", title=f"PageRank Scores at Iteration k={k}")
-fig.update_layout(yaxis_tickformat=".4f")
-st.plotly_chart(fig, use_container_width=True)
-
-
+col1, col2 = st.columns(2):
+with col1:
+    st.subheader("Graph View")
+    fig_graph = graph_pr_figure(r_k)
+    st.plotly_chart(fig_graph, use_container_width=True)
+with col2:
+    df_rank = pd.DataFrame({
+        "node": NODE_IDS,
+        "score": r_k
+    }).sort_values("score", ascending=False).reset_index(drop=True)
+    fig = px.bar(df_rank, y="node", x="score", title=f"PageRank Scores at Iteration k={k}")
+    fig.update_layout(yaxis_tickformat=".4f")
+    st.plotly_chart(fig, use_container_width=True)
 
 
 # ----------------------
