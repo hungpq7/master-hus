@@ -24,6 +24,7 @@ NODES = {
     "I": {"name": "University",   "topics": ["Tech"],                    "is_spam": False},
     "J": {"name": "Wikipedia",    "topics": ["Tech","Sports","Cooking"], "is_spam": False},
 }
+
 EDGES = [
     ("A","B",5), ("A","C",2), ("A","J",1),
     ("B","A",3), ("B","C",2), ("B","G",1),
@@ -45,16 +46,17 @@ n = len(NODE_IDS)
 # Build unweighted transition matrix P (row-stochastic, dangling -> uniform)
 A = np.zeros((n, n), dtype=float)
 for u, v, _w in EDGES:
-    A[IDX[u], IDX[v]] = 1.0  # unweighted connectivity
+    A[IDX[v], IDX[u]] = 1.0  # unweighted connectivity
 
-row_sums = A.sum(axis=1, keepdims=True)
-P = np.where(row_sums > 0, A / row_sums, 1.0/n)
+col_sums = A.sum(axis=0, keepdims=True)
+A = np.where(col_sums > 0, A / col_sums, 1.0/n)
+
 
 # ----------------------
 # Sidebar: configuration
 # ----------------------
 st.sidebar.header("Power Iteration Settings")
-alpha = st.sidebar.slider("Damping factor (α)", 0.0, 1.0, 0.85, 0.01)
+alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
 tol = st.sidebar.number_input("Stop tolerance (L1 distance)", min_value=1e-10, max_value=1.0, value=1e-6, step=1e-6, format="%.0e")
 max_iter = st.sidebar.slider("Max iterations", 1, 500, 100)
 
@@ -159,7 +161,7 @@ def step_once():
     # Teleport vector v: uniform
     v = np.ones(n) / n
     # Next iterate: r_{k+1}^T = α r_k^T P + (1-α) v^T
-    r_next = alpha * (r @ P) + (1 - alpha) * v
+    r_next = alpha * (r @ A) + (1 - alpha) * v
     # Normalize defensively
     r_next = r_next / r_next.sum()
     delta = np.abs(r_next - r).sum()
@@ -209,11 +211,11 @@ k = st.session_state.pi_k
 r_k = st.session_state.pi_hist[k]
 delta = st.session_state.pi_last_delta if k > 0 else None
 
-st.markdown(f"### Iteration **k = {k}**  |  α = **{alpha:.2f}**")
+st.markdown(f"### Iteration $k = {k}$  |  $\\alpha = {alpha:.2f}$")
 status = "✅ Converged" if st.session_state.pi_converged else "⏳ In progress"
 st.write(f"Status: {status}")
 if delta is not None:
-    st.write(f"L1 change from k-1 → k: **{delta:.3e}**  (tol = {tol:.1e})")
+    st.write(f"L1 change from $k-1\\to k$: {delta:.3e}  (tol = {tol:.1e})")
 
 col1, col2 = st.columns(2)
 with col1:
