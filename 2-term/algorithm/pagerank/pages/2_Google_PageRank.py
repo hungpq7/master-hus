@@ -3,6 +3,9 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import networkx as nx
+import plotly.graph_objects as go
+
 
 st.set_page_config(page_title="Power Iteration — PageRank", layout="wide")
 
@@ -76,6 +79,75 @@ if (st.session_state.get("pi_alpha") != alpha or
     st.session_state.get("pi_tol") != tol or
     st.session_state.get("pi_max") != max_iter):
     reset_state()
+
+# --- One-time graph + fixed positions (put after P is created) ---
+# Build a simple unweighted DiGraph for visualization
+G_vis = nx.DiGraph()
+G_vis.add_nodes_from(NODE_IDS)
+G_vis.add_edges_from([(u, v) for (u, v, _w) in EDGES])
+
+# Persist node positions across iterations so layout stays fixed
+if "pi_pos" not in st.session_state:
+    # Spring layout with a fixed seed for reproducibility
+    st.session_state.pi_pos = nx.spring_layout(G_vis, seed=42, k=None)  # tweak k if you want spacing
+pos = st.session_state.pi_pos
+
+# --- Helper to build a Plotly figure with node sizes from current scores ---
+def graph_pr_figure(scores: np.ndarray) -> go.Figure:
+    # Normalize scores to a readable marker size
+    s = np.array(scores, dtype=float)
+    if s.max() > 0:
+        s_norm = (s - s.min()) / (s.max() - s.min() + 1e-12)
+    else:
+        s_norm = np.zeros_like(s)
+    marker_sizes = 12 + 28 * s_norm  # range ≈ [12, 40]
+
+    # Edge traces (as line segments)
+    edge_x, edge_y = [], []
+    for u, v in G_vis.edges():
+        x0, y0 = pos[u]
+        x1, y1 = pos[v]
+        edge_x += [x0, x1, None]
+        edge_y += [y0, y1, None]
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        mode="lines",
+        line=dict(width=1, color="rgba(150,150,150,0.6)"),
+        hoverinfo="none",
+        showlegend=False
+    )
+
+    # Node trace
+    node_x = [pos[n][0] for n in NODE_IDS]
+    node_y = [pos[n][1] for n in NODE_IDS]
+    node_text = [f"{n}: {score:.4f}" for n, score in zip(NODE_IDS, s)]
+    node_trace = go.Scatter(
+        x=node_x, y=node_y,
+        mode="markers+text",
+        text=NODE_IDS,
+        textposition="middle center",
+        hovertext=node_text,
+        hoverinfo="text",
+        marker=dict(
+            size=marker_sizes,
+            line=dict(width=1, color="white"),
+            color="rgba(31,119,180,0.85)",
+        ),
+        showlegend=False
+    )
+
+    fig = go.Figure(data=[edge_trace, node_trace])
+    fig.update_layout(
+        title=f"Power Iteration — Node Sizes = PageRank (k={st.session_state.pi_k})",
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False),
+        margin=dict(l=10, r=10, t=40, b=10),
+        plot_bgcolor="white",
+        hovermode="closest"
+    )
+    fig.update_yaxes(scaleanchor="x", scaleratio=1)  # keep aspect ratio
+    return fig
+
 
 # ----------------------
 # Power iteration helpers
@@ -151,6 +223,11 @@ st.dataframe(df_rank.style.format({"score": "{:.6f}"}), use_container_width=True
 fig = px.bar(df_rank, x="node", y="score", title=f"PageRank Scores at Iteration k={k}")
 fig.update_layout(yaxis_tickformat=".4f")
 st.plotly_chart(fig, use_container_width=True)
+
+st.subheader("Graph View (node size reflects current PageRank)")
+fig_graph = graph_pr_figure(r_k)
+st.plotly_chart(fig_graph, use_container_width=True)
+
 
 # ----------------------
 # (Optional) Show last 5 iterations as a mini history
