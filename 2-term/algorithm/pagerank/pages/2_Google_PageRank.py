@@ -218,13 +218,16 @@ delta = st.session_state.pi_last_delta if k > 0 else None
 
 # Metrics row
 st.divider()
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3 = st.columns(4)
 with col1:
     st.metric("Iteration", f"k = {k}")
 
 with col2:
     status, color = ('✅ Converged', 'normal') if st.session_state.pi_converged else ('⏳ In progress', 'off')
-    st.metric("L1 change", f"{delta:.2e}", delta=status, delta_color=color)
+    if delta is None:
+        st.metric("L1 change", 0)
+    else:
+        st.metric("L1 change", f"{delta:.2e}", delta=status, delta_color=color)
 
 st.divider()
 
