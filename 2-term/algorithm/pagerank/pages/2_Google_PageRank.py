@@ -76,9 +76,11 @@ else:
 
 use_topic_teleport = st.sidebar.checkbox("Use topic teleport", value=False)
 if use_topic_teleport:
-    topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
+    topic_choice = st.sidebar.selectbox("Topic select", list(TOPIC_TELEPORT.keys()), index=0)
 
 use_seed_pages = st.sidebar.checkbox("Use TrustRank seeds", value=False)
+if use_seed_pages:
+    seed_pages = st.sidebar.text_input("Provide seed pages (comma-separated)", value="I,J,D")
 
 use_edge_weights = st.sidebar.checkbox("Use edge weights", value=False)
 
@@ -97,7 +99,24 @@ if use_topic_teleport:
         p /= p.sum()
 else:
     p[:] = 1.0 / n
-G = alpha * A + (1 - alpha) * np.outer(np.ones(n), p)
+
+seed_ids = [s.strip() for s in seed_pages.split(",") if s.strip() in IDX]
+s = np.zeros(n, dtype=float)
+for nid in seed_ids:
+    s[IDX[nid]] = 1.0
+
+if s.sum() > 0:
+    # Project p onto the seed set; if topic teleport gives zero to seeds, use uniform over seeds
+    t = p * s
+    if t.sum() == 0:
+        t = s / s.sum()
+    else:
+        t /= t.sum()
+else:
+    # No valid seeds provided — fall back to p
+    t = p
+
+G = alpha * A + (1 - alpha) * np.outer(np.ones(n), t)
 
 # ----------------------
 # Session state initialization
