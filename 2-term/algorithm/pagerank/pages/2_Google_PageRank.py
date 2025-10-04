@@ -65,10 +65,8 @@ A = np.where(col_sums > 0, A / col_sums, 1.0/n)
 # Sidebar: configuration
 # ----------------------
 st.sidebar.header("Controls")
-tol = st.sidebar.number_input("Stop tolerance (L1 distance)", min_value=1e-10, max_value=1.0, value=1e-6, step=1e-6, format="%.0e")
-max_iter = st.sidebar.slider("Max iterations", 1, 500, 100)
+
 # st.sidebar.write("----")
-st.sidebar.divider()
 
 use_damping_factor = st.sidebar.checkbox("Use damping factor", value=False)
 if use_damping_factor:
@@ -76,10 +74,25 @@ if use_damping_factor:
 else:
     alpha = 1.0
 
-# alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
+use_topic_teleport = st.sidebar.checkbox("Use topic teleport", value=False)
+if use_topic_teleport:
+    topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
+
+st.sidebar.divider()
+tol = st.sidebar.number_input("Stop tolerance (L1 distance)", min_value=1e-10, max_value=1.0, value=1e-6, step=1e-6, format="%.0e")
+max_iter = st.sidebar.slider("Max iterations", 1, 500, 100)
+
 
 p = np.zeros(n, dtype=float)
-p[:] = 1.0 / n
+if use_topic_teleport:
+    for node, prob in TOPIC_TELEPORT.get(topic_choice, {}).items():
+        p[idx[node]] = prob
+    if p.sum() == 0:
+        p[:] = 1.0 / n
+    else:
+        p /= p.sum()
+else:
+    p[:] = 1.0 / n
 G = alpha * A + (1 - alpha) * np.outer(np.ones(n), p)
 
 # ----------------------
