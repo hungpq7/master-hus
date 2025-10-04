@@ -100,12 +100,13 @@ if use_topic_teleport:
 else:
     p[:] = 1.0 / n
 
-seed_ids = [s.strip() for s in seed_pages.split(",") if s.strip() in IDX]
-s = np.zeros(n, dtype=float)
-for nid in seed_ids:
-    s[IDX[nid]] = 1.0
+
 
 if use_seed_pages:
+    seed_ids = [s.strip() for s in seed_pages.split(",") if s.strip() in IDX]
+    s = np.zeros(n, dtype=float)
+    for nid in seed_ids:
+        s[IDX[nid]] = 1.0
     if s.sum() > 0:
         # Project p onto the seed set; if topic teleport gives zero to seeds, use uniform over seeds
         t = p * s
