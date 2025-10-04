@@ -218,7 +218,7 @@ delta = st.session_state.pi_last_delta if k > 0 else None
 
 # Metrics row
 st.divider()
-col1, col2, col3 = st.columns(4)
+col1, col2, col3 = st.columns(3)
 with col1:
     st.metric("Iteration", f"k = {k}")
 
