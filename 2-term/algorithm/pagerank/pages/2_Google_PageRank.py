@@ -78,6 +78,10 @@ use_topic_teleport = st.sidebar.checkbox("Use topic teleport", value=False)
 if use_topic_teleport:
     topic_choice = st.sidebar.selectbox("Topic teleport to view", list(TOPIC_TELEPORT.keys()), index=0)
 
+use_seed_pages = st.sidebar.checkbox("Use TrustRank seeds", value=False)
+
+use_edge_weights = st.sidebar.checkbox("Use edge weights", value=False)
+
 st.sidebar.divider()
 tol = st.sidebar.number_input("Stop tolerance (L1 distance)", min_value=1e-10, max_value=1.0, value=1e-6, step=1e-6, format="%.0e")
 max_iter = st.sidebar.slider("Max iterations", 1, 500, 100)
