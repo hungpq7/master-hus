@@ -194,10 +194,10 @@ def run_all():
 # ----------------------
 colA, colB, colC, colD = st.columns([1,1,1,1])
 with colA:
-    if st.button("Reset", use_container_width=True, type="primary"):
-        reset_state()
     if st.button("◀ Prev", use_container_width=True):
         step_prev()
+    if st.button("Reset", use_container_width=True, type="primary"):
+        reset_state()
 with colB:
     if st.button("Next ▶", use_container_width=True):
         # If we're at the tail, compute a new step; otherwise move cursor forward
