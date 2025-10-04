@@ -38,6 +38,15 @@ EDGES = [
     ("J","A",2), ("J","D",2), ("J","F",1), ("J","I",3),
 ]
 
+TOPIC_TELEPORT = {
+    "Tech":    {"A":0.25, "B":0.25, "C":0.20, "I":0.15, "J":0.15},
+    "Sports":  {"D":0.35, "E":0.25, "C":0.20, "J":0.20},
+    "Cooking": {"F":0.60, "J":0.40},
+    "General": {"J":0.50, "C":0.30, "I":0.20},
+}
+
+TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
+
 # Order nodes, build index maps
 NODE_IDS = sorted(NODES.keys())
 IDX = {n:i for i,n in enumerate(NODE_IDS)}
@@ -55,10 +64,18 @@ A = np.where(col_sums > 0, A / col_sums, 1.0/n)
 # ----------------------
 # Sidebar: configuration
 # ----------------------
-st.sidebar.header("Power Iteration Settings")
-alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
+st.sidebar.header("Controls")
 tol = st.sidebar.number_input("Stop tolerance (L1 distance)", min_value=1e-10, max_value=1.0, value=1e-6, step=1e-6, format="%.0e")
 max_iter = st.sidebar.slider("Max iterations", 1, 500, 100)
+st.divider()
+
+use_damping_factor = st.sidebar.checkbox("Use damping factor", value=False)
+if use_damping_factor:
+    alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.05)
+else:
+    alpha = 1.0
+
+# alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
 
 p = np.zeros(n, dtype=float)
 p[:] = 1.0 / n

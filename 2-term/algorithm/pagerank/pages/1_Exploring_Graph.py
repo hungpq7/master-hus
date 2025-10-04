@@ -53,7 +53,7 @@ TRUSTRANK_GOOD_SEEDS = ["I", "J", "D"]
 st.sidebar.header("Controls")
 use_damping_factor = st.sidebar.checkbox("Use damping factor", value=False)
 if use_damping_factor:
-    alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.01)
+    alpha = st.sidebar.slider("Damping factor ($\\alpha$)", 0.0, 1.0, 0.85, 0.05)
 else:
     alpha = 1.0
 
