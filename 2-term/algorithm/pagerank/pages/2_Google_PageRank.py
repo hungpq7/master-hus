@@ -86,7 +86,7 @@ max_iter = st.sidebar.slider("Max iterations", 1, 500, 100)
 p = np.zeros(n, dtype=float)
 if use_topic_teleport:
     for node, prob in TOPIC_TELEPORT.get(topic_choice, {}).items():
-        p[idx[node]] = prob
+        p[IDX[node]] = prob
     if p.sum() == 0:
         p[:] = 1.0 / n
     else:

@@ -65,16 +65,16 @@ use_edge_weights = st.sidebar.checkbox("Use edge weights", value=False)
 
 # Build ordered node list and indices
 node_ids = sorted(NODES.keys())
-idx = {n: i for i, n in enumerate(node_ids)}
+IDX = {n: i for i, n in enumerate(node_ids)}
 n = len(node_ids)
 
 # Weighted adjacency A (cols: from, rows: to)
 A = np.zeros((n, n), dtype=float)
 for u, v, w in EDGES:
     if use_edge_weights:
-        A[idx[v], idx[u]] += float(w)
+        A[IDX[v], IDX[u]] += float(w)
     else:
-        A[idx[v], idx[u]] += 1
+        A[IDX[v], IDX[u]] += 1
 
 # Column-normalized transition A (uniform row if dangling)
 col_sums = A.sum(axis=0, keepdims=True)
@@ -85,7 +85,7 @@ A = np.where(col_sums > 0, A / col_sums, 1.0 / n)
 p = np.zeros(n, dtype=float)
 if use_topic_teleport:
     for node, prob in TOPIC_TELEPORT.get(topic_choice, {}).items():
-        p[idx[node]] = prob
+        p[IDX[node]] = prob
     if p.sum() == 0:
         p[:] = 1.0 / n
     else:
