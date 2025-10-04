@@ -220,23 +220,12 @@ delta = st.session_state.pi_last_delta if k > 0 else None
 st.divider()
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    st.metric("Iteration", f"$k={k}$")
+    st.metric("Iteration", f"k = {k}")
 
 with col2:
-    status = "✅ Converged" if st.session_state.pi_converged else "⏳ In progress"
-    st.metric("Status", status)
+    delta, color = ('✅ Converged', 'normal') if st.session_state.pi_converged else ('⏳ In progress', 'off')
+    st.metric("L1 change", f"{delta:.2e}", delta=delta, delta_color=color)
 
-with col3:
-    if delta is None:
-        st.metric("L1 change ‖πₖ−πₖ₋₁‖₁", "—", help="Shown once k ≥ 1")
-    else:
-        # Show the current change; mark '≤ tol' when converged
-        val = f"{delta:.2e}"
-        tol_txt = f"tol = {tol:.1e}"
-        if st.session_state.pi_converged:
-            st.metric("L1 change", val, delta="≤ tol", delta_color="inverse")
-        else:
-            st.metric("L1 change", val, delta=tol_txt, delta_color="off")
 st.divider()
 
 
