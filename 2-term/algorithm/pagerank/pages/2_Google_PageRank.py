@@ -223,8 +223,8 @@ with col1:
     st.metric("Iteration", f"k = {k}")
 
 with col2:
-    delta, color = ('✅ Converged', 'normal') if st.session_state.pi_converged else ('⏳ In progress', 'off')
-    st.metric("L1 change", f"{delta:.2e}", delta=delta, delta_color=color)
+    status, color = ('✅ Converged', 'normal') if st.session_state.pi_converged else ('⏳ In progress', 'off')
+    st.metric("L1 change", f"{delta:.2e}", delta=status, delta_color=color)
 
 st.divider()
 
