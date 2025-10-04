@@ -67,7 +67,7 @@ A = np.where(col_sums > 0, A / col_sums, 1.0/n)
 st.sidebar.header("Controls")
 tol = st.sidebar.number_input("Stop tolerance (L1 distance)", min_value=1e-10, max_value=1.0, value=1e-6, step=1e-6, format="%.0e")
 max_iter = st.sidebar.slider("Max iterations", 1, 500, 100)
-st.divider()
+st.write("----")
 
 use_damping_factor = st.sidebar.checkbox("Use damping factor", value=False)
 if use_damping_factor:
