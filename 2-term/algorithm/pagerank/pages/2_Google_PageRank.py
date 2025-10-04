@@ -134,7 +134,7 @@ def graph_pr_figure(scores: np.ndarray) -> go.Figure:
         textposition="middle center",
         hovertext=node_text,
         hoverinfo="text",
-        textfont=dict(color="white", family="Arial Black, sans-serif"),  # light & bold-looking
+        textfont=dict(color="white"),
         marker=dict(
             size=marker_sizes,
             line=dict(width=1, color="white"),
