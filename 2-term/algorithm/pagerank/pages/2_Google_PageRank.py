@@ -52,17 +52,6 @@ NODE_IDS = sorted(NODES.keys())
 IDX = {n:i for i,n in enumerate(NODE_IDS)}
 n = len(NODE_IDS)
 
-# Build unweighted transition matrix P (row-stochastic, dangling -> uniform)
-A = np.zeros((n, n), dtype=float)
-for u, v, w in EDGES:
-    if use_edge_weights:
-        A[IDX[v], IDX[u]] += float(w)
-    else:
-        A[IDX[v], IDX[u]] += 1
-
-col_sums = A.sum(axis=0, keepdims=True)
-A = np.where(col_sums > 0, A / col_sums, 1.0/n)
-
 
 # ----------------------
 # Sidebar: configuration
@@ -91,6 +80,16 @@ st.sidebar.divider()
 tol = st.sidebar.number_input("Stop tolerance (L1 distance)", min_value=1e-10, max_value=1.0, value=1e-6, step=1e-6, format="%.0e")
 max_iter = st.sidebar.slider("Max iterations", 1, 500, 100)
 
+# Build unweighted transition matrix P (row-stochastic, dangling -> uniform)
+A = np.zeros((n, n), dtype=float)
+for u, v, w in EDGES:
+    if use_edge_weights:
+        A[IDX[v], IDX[u]] += float(w)
+    else:
+        A[IDX[v], IDX[u]] += 1
+
+col_sums = A.sum(axis=0, keepdims=True)
+A = np.where(col_sums > 0, A / col_sums, 1.0/n)
 
 p = np.zeros(n, dtype=float)
 if use_topic_teleport:
@@ -102,8 +101,6 @@ if use_topic_teleport:
         p /= p.sum()
 else:
     p[:] = 1.0 / n
-
-
 
 if use_seed_pages:
     seed_ids = [s.strip() for s in seed_pages.split(",") if s.strip() in IDX]
