@@ -192,7 +192,7 @@ def run_all():
 # ----------------------
 # UI: Buttons
 # ----------------------
-colA, colB, _, colC, colD = st.columns([1,1,1,1,1])
+colA, colB, _, colC, colD = st.columns([2,2,1,3,3])
 with colA:
     if st.button("◀ Prev", use_container_width=True):
         step_prev()
