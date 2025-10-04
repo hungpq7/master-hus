@@ -105,15 +105,17 @@ s = np.zeros(n, dtype=float)
 for nid in seed_ids:
     s[IDX[nid]] = 1.0
 
-if s.sum() > 0:
-    # Project p onto the seed set; if topic teleport gives zero to seeds, use uniform over seeds
-    t = p * s
-    if t.sum() == 0:
-        t = s / s.sum()
+if use_seed_pages:
+    if s.sum() > 0:
+        # Project p onto the seed set; if topic teleport gives zero to seeds, use uniform over seeds
+        t = p * s
+        if t.sum() == 0:
+            t = s / s.sum()
+        else:
+            t /= t.sum()
     else:
-        t /= t.sum()
+        t = p
 else:
-    # No valid seeds provided — fall back to p
     t = p
 
 G = alpha * A + (1 - alpha) * np.outer(np.ones(n), t)
