@@ -138,7 +138,7 @@ def graph_pr_figure(scores: np.ndarray) -> go.Figure:
         marker=dict(
             size=marker_sizes,
             line=dict(width=1, color="white"),
-            color="rgba(31,119,180,0.85)",
+            color="rgba(31,119,180)",
         ),
         showlegend=False
     )
