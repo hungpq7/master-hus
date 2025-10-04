@@ -54,8 +54,11 @@ n = len(NODE_IDS)
 
 # Build unweighted transition matrix P (row-stochastic, dangling -> uniform)
 A = np.zeros((n, n), dtype=float)
-for u, v, _w in EDGES:
-    A[IDX[v], IDX[u]] = 1.0  # unweighted connectivity
+for u, v, w in EDGES:
+    if use_edge_weights:
+        A[IDX[v], IDX[u]] += float(w)
+    else:
+        A[IDX[v], IDX[u]] += 1
 
 col_sums = A.sum(axis=0, keepdims=True)
 A = np.where(col_sums > 0, A / col_sums, 1.0/n)
