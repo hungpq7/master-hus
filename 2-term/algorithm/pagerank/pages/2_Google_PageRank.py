@@ -196,17 +196,15 @@ colA, colB, colC, colD = st.columns([1,1,1,1])
 with colA:
     if st.button("Reset", use_container_width=True, type="primary"):
         reset_state()
-with colB:
     if st.button("◀ Prev", use_container_width=True):
         step_prev()
-with colC:
+with colB:
     if st.button("Next ▶", use_container_width=True):
         # If we're at the tail, compute a new step; otherwise move cursor forward
         if st.session_state.pi_k == len(st.session_state.pi_hist) - 1:
             step_once()
         else:
             st.session_state.pi_k += 1
-with colD:
     if st.button("Run all", use_container_width=True, type="primary"):
         run_all()
 
@@ -218,26 +216,18 @@ r_k = st.session_state.pi_hist[k]
 delta = st.session_state.pi_last_delta if k > 0 else None
 
 # Metrics row
-st.divider()
-col1, col2, col3 = st.columns(3)
-with col1:
+# st.divider()
+# col1, col2, col3 = st.columns(3)
+with colC:
     st.metric("Iteration", f"k = {k}")
-
-with col2:
+with colD:
     status, color = ('✅ Converged', 'normal') if st.session_state.pi_converged else ('⏳ In progress', 'off')
     if delta is None:
         st.metric("L1 change", 0)
     else:
         st.metric("L1 change", f"{delta:.2e}", delta=status, delta_color=color)
-
 st.divider()
 
-
-# st.markdown(f"### Iteration $k = {k}$  |  $\\alpha = {alpha:.2f}$")
-# status = "✅ Converged" if st.session_state.pi_converged else "⏳ In progress"
-# st.write(f"Status: {status}")
-# if delta is not None:
-#     st.write(f"L1 change from $k-1\\to k$: {delta:.3e}  (tol = {tol:.1e})")
 
 col1, col2 = st.columns(2)
 with col1:
@@ -245,11 +235,12 @@ with col1:
     fig_graph = graph_pr_figure(r_k)
     st.plotly_chart(fig_graph, use_container_width=True)
 with col2:
+    st.subheader("PageRank Scores")
     df_rank = pd.DataFrame({
         "node": NODE_IDS,
         "score": r_k
     }).sort_values("score", ascending=False).reset_index(drop=True)
-    fig = px.bar(df_rank, y="node", x="score", title=f"PageRank Scores at Iteration k={k}")
+    fig = px.bar(df_rank, y="node", x="score")
     fig.update_layout(yaxis_tickformat=".4f")
     st.plotly_chart(fig, use_container_width=True)
 
