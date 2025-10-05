@@ -72,7 +72,7 @@ if use_topic_teleport:
 
 use_seed_pages = st.sidebar.checkbox("Use TrustRank seeds", value=False)
 if use_seed_pages:
-    seed_pages = st.sidebar.text_input("Provide seed pages (comma-separated)", value="I,J,D")
+    seed_pages = st.sidebar.text_input("Seed pages", value="I,J,D")
 
 use_edge_weights = st.sidebar.checkbox("Use edge weights", value=False)
 
